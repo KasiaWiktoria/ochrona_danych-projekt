@@ -1,0 +1,22 @@
+version: '3'
+
+services:
+  nginx:
+    build: 
+      context: ./nginx-ssl/
+      dockerfile: Dockerfile
+    depends_on:
+      - flask
+    ports:
+      - "443:443"
+    volumes:
+      - ./nginx-uwsgi.conf:/etc/nginx/nginx.conf
+
+  flask:
+    build: 
+      context: ./uwsgi-flask/
+      dockerfile: Dockerfile
+    volumes:
+      - ./notes_app:/var/www/app
+      - ./notes_app/static:/usr/share/nginx/html
+

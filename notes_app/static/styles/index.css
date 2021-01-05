@@ -1,0 +1,63 @@
+table{
+    margin: auto;
+    margin-bottom: 50px;
+}
+
+table tbody tr:nth-child(odd) {background:var(--main-color);}
+table tbody tr:nth-child(even) {background: #d8f5cc;}
+
+table tbody:hover tr:nth-child(odd) {background:var(--second-color); color: white;}
+table tbody:hover tr:nth-child(even) {background:#E6CBF6;}
+
+table tbody tr td:hover {background:#760c80; color: white;}
+
+table tbody:hover .top-tr th {background:#760c80;}
+
+table tbody th{
+    background:#317000;
+    color: white;
+    padding: 10px 20px;
+}
+
+table caption{
+    padding-bottom: 20px;
+    padding-top: 10px;
+    font-size: 24px;
+}
+
+table tbody .top-tr{
+    text-align: center;
+}
+
+table tbody td{
+    padding: 10px 20px;
+    text-align: center;
+}
+
+section.image2 {
+    background-image: url('../images/paczki-tlo.jpg');
+    height: 400px;
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: cover;
+    background-attachment: fixed;
+}
+
+section.image {
+    background-image: url('../images/kurier.jpg');
+    height: 400px;
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: cover;
+    background-attachment: fixed;
+}
+
+.img-block {
+    display: flex;
+    justify-content: center;
+    width: 1024px;
+}
+
+.img-block img{
+    width: 1024px;
+}
