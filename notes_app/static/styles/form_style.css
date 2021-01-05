@@ -1,0 +1,77 @@
+
+form{
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+form .column{
+    width: 50%;
+    text-align: end;
+    align-self: center;
+    padding: 0;
+}
+form .max-width-elem{
+    display: flex;
+    justify-content: center;
+    width: 100%;
+    margin: auto;
+}
+
+form .form-col{
+    width: 70%;
+    margin: auto;
+    min-width: 340px;
+}
+
+form .form-row{
+    display: flex;
+    flex-wrap: wrap;   
+    justify-content: space-between;
+    align-items: center;
+    text-align: left;
+    padding: 5px;
+}
+
+form .form-row label{
+    width: 160px;
+    min-width: 90px;
+}
+
+form .form-row input{
+    width: 170px;
+    padding: 10px 5px;
+    margin-left: 10px;
+}
+
+form.add-note-form{
+    flex-direction: column;
+
+}
+
+form.add-note-form input{
+    width: 70%;
+    margin: 10px 0;
+}
+
+.warning-field{
+    font-size: 10px;
+    margin-left: auto;
+    color: red;
+    padding-right: 10px;
+    text-align: right;
+}
+
+.uncorrect-field{
+    font-size: 15px;
+    margin: auto;
+    color: red;
+    text-align: center;
+}
+
+.correct-field{
+    font-size: 15px;
+    margin: auto;
+    color: green;
+    text-align: center;
+}

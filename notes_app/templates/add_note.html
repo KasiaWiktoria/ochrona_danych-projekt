@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="pl">
+    <head>
+        <title>notes</title>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width", initial-scale=1.0">
+        <link href="/styles/index.css" rel="stylesheet" type="text/css">
+        <link href="/styles/form_style.css" rel="stylesheet" type="text/css">
+        <link href="/styles/main_style.css" rel="stylesheet" type="text/css">
+        <link rel="shortcut icon" href="/images/favicon.ico"/>
+    </head>
+    <body>
+        <header>
+            <a href="/" class="logo">
+                <img src="/images/logo.svg" alt="logo">
+                <p><span>notes</span> notatki </p>
+            </a> 
+            <nav>
+                <div class="menu">
+                    <ul>
+                        <li><a href="/">Strona główna</a></li>
+                        <li><a href="/notes">Moje notatki</a></li>
+                        <li><a href="/login">Zaloguj się</a></li>
+                    </ul>
+                </div>
+            </nav>
+            <a href="/login">
+                <img src="/images/konto.svg" alt="moje konto"> 
+            </a>
+        </header>
+
+        <section class="text">
+            
+            <h1 id="title">Dodaj notatkę</h1>
+
+            <form class="add-note-form">
+                <label for="title">tytuł: </label>
+                <input type="text" id="title">
+                <label for="note">treść notatki: </label>
+                <textarea name="note" id="note" cols="30" rows="10"></textarea>
+                
+                <div class="btn-block">
+                    <input class="btn" id="button-submit-form" type="submit" value="Dodaj notatkę"/>               
+                </div>
+            </form>
+        </section>
+
+    </body> 
+</html>

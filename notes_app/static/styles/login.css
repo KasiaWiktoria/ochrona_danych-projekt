@@ -1,0 +1,36 @@
+.nav-block{
+    display: flex;
+    border-bottom-style: inset;
+    border-color: var(--main-color);
+    box-shadow: 0px 2px #20031e0c;
+    margin-bottom: 30px;
+}
+
+.nav-block a{
+    margin: 40px 10px 10px 130px;
+    font-size: 30px;
+    color: #20031e2c;
+    width: 250px;
+}
+
+@media (max-width: 765px) {
+    .nav-block{
+        justify-content: center;
+        align-items: center;
+    }
+
+    .nav-block a{
+        margin: 10px;
+    }
+
+    .nav-block a.selected {
+        font-size: 30px;
+    }
+}
+
+.nav-block a.selected{
+    width: 300px;
+    font-size: 40px;
+    color: var(--main-color);
+    text-shadow: 2px 1px #20031e0c;
+}

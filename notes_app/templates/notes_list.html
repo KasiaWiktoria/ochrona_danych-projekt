@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="pl">
+    <head>
+        <title>notes</title>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width", initial-scale=1.0">
+        <link href="/styles/index.css" rel="stylesheet" type="text/css">
+        <link href="/styles/main_style.css" rel="stylesheet" type="text/css">
+        <link rel="shortcut icon" href="/images/favicon.ico"/>
+    </head>
+    <body>
+        <header>
+            <a href="/" class="logo">
+                <img src="/images/logo.svg" alt="logo">
+                <p><span>notes</span> notatki </p>
+            </a> 
+            <nav>
+                <div class="menu">
+                    <ul>
+                        <li><a href="/">Strona główna</a></li>
+                        <li><a href="/notes">Moje notatki</a></li>
+                        <li><a href="/login">Zaloguj się</a></li>
+                    </ul>
+                </div>
+            </nav>
+            <a href="/login">
+                <img src="/images/konto.svg" alt="moje konto"> 
+            </a>
+        </header>
+
+        <section class="nav-block">
+            <a class="selected" href="/notes_list">Wszystkie</a>
+            <a href="/shared_notes">Udostępnione</a>
+            <a href="/my_notes">Moje</a>
+        </section>
+
+        <section class="text">
+            
+            <h1 id="title">Lista twoich notatek</h1>
+
+            <div class="notes_list">
+                <div class="note_field">
+                    <div class="author"></div>
+                    <div class="date"></div>
+                    <title></title>
+                    <p class="text"></p>
+                </div>
+            </div>
+            
+        </section>
+
+    </body> 
+</html>

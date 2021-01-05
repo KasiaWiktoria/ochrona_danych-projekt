@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="pl">
+    <head>
+        <title>notes</title>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width", initial-scale=1.0">
+        <link href="/styles/login.css" rel="stylesheet" type="text/css">
+        <link href="/styles/main_style.css" rel="stylesheet" type="text/css">
+        <link href="/styles/form_style.css" rel="stylesheet" type="text/css">
+        <link rel="shortcut icon" href="/images/favicon.ico"/>
+        <script type="module" src="/scripts/login.js"></script>   
+
+    </head>
+    <body>
+        <header>
+            <a href="/" class="logo">
+                <img src="/images/logo.svg" alt="logo">
+                <p><span>notes</span> notatki </p>
+            </a> 
+            <nav>
+                <div class="menu">
+                    <ul>
+                        <li><a href="/">Strona główna</a></li>
+                        <li><a href="/notes">Moje notatki</a></li>
+                        <li><a href="/login">Zaloguj się</a></li>
+                    </ul>
+                </div>
+            </nav>
+            <a href="/login">
+                <img src="/images/konto.svg" alt="moje konto"> 
+            </a>
+        </header>
+
+        <section class="nav-block">
+                <a class="selected" href="/app/login">Zaloguj się</a>
+                <a href="/app/registration">Zarejestruj się</a>
+        </section>
+
+        <form id="login-form" class="login-form">
+
+            <div class="column">
+                <div class="form-col">
+
+                <div class="form-row">
+                    <label for="login" class="required">Login</label>
+                    <input id="login" type="text" name="login"/>
+                </div>
+
+                <div class="form-row">
+                    <label for="password" class="required">Hasło</label>
+                    <input id="password" type="password" name="password"/>
+                </div>
+
+                <div class="btn-block">
+                    <input class="btn" id="button-submit-form" type="submit" value="Zaloguj"/>               
+                </div>    
+
+                </div>
+            </div>
+            <div class="column">
+                <img src="/images/notebook.svg" alt="notes">
+            </div>
+        </form>
+
+
+    </body> 
+</html>
