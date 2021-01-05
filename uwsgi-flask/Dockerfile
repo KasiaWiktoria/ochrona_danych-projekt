@@ -7,5 +7,4 @@ COPY uwsgi.ini uwsgi.ini
 COPY wsgi.py wsgi.py
 COPY requirements.txt requirements.txt
 RUN pip install -r requirements.txt
-COPY app app
 CMD ["uwsgi", "--ini", "uwsgi.ini"]

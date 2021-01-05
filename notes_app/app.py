@@ -8,20 +8,20 @@ log.debug('działa')
 
 @app.route("/")
 def index():
-    log.debug('ok OK')
     return render_template("index.html")
 
 @app.route("/login")
 def login():
-    log.debug('ok OK')
     return render_template("login.html")
+
+@app.route("/registration")
+def registration():
+    return render_template("registration.html")
 
 @app.route("/notes")
 def notes_list():
-    log.debug('ok OK')
     return render_template("notes_list.html")
 
 @app.route("/add_note")
 def add_note():
-    log.debug('ok OK')
     return render_template("add_note.html")

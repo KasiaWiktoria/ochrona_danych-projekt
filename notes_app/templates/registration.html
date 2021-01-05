@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="pl">
+    <head>
+        <title>notes</title>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width", initial-scale=1.0">
+        <link href="/styles/login.css" rel="stylesheet" type="text/css">
+        <link href="/styles/main_style.css" rel="stylesheet" type="text/css">
+        <link href="/styles/form_style.css" rel="stylesheet" type="text/css">
+        <link rel="shortcut icon" href="/images/favicon.ico"/>
+        <script type="module" src="/scripts/registration.js"></script>   
+
+    </head>
+    <body>
+        <header>
+            <a href="/" class="logo">
+                <img src="/images/logo.svg" alt="logo">
+                <p><span>notes</span> notatki </p>
+            </a> 
+            <nav>
+                <div class="menu">
+                    <ul>
+                        <li><a href="/">Strona główna</a></li>
+                        <li><a href="/notes">Moje notatki</a></li>
+                        <li><a href="/login">Zaloguj się</a></li>
+                    </ul>
+                </div>
+            </nav>
+            <a href="/login">
+                <img src="/images/konto.svg" alt="moje konto"> 
+            </a>
+        </header>
+
+        <section class="nav-block">
+                <a href="/login">Zaloguj się</a>
+                <a class="selected" href="/registration">Zarejestruj się</a>
+        </section>
+
+        <form id="registration-form" class="registration-form">
+
+            <div class="column">
+                <div class="form-col">
+
+                    <div class="form-row">
+                        <label for="email" class="required">e-mail</label>
+                        <input id="email" type="email" name="email"/>
+                    </div>
+
+                    <div class="form-row">
+                        <label for="login" class="required">Login</label>
+                        <input id="login" type="text" name="login"/>
+                    </div>
+
+                    <label for="passwordStrength">Siła hasła: </label>
+                    <progress id="passwordStrength" value="0"></progress>
+
+                    <div class="form-row">
+                        <label for="password" class="required">Hasło</label>
+                        <input id="password" type="password" name="password"/>
+                    </div>
+
+                    <div class="form-row">
+                        <label for="second_password" class="required">Powtórz hasło</label>
+                        <input id="second_password" type="password" name="second_password"/>
+                    </div>
+
+                    <div class="btn-block">
+                        <input class="btn" id="button-submit-form" type="submit" value="Zarejestruj"/>               
+                    </div>    
+
+                </div>
+            </div>
+            <div class="column">
+                <img src="/images/notebook.svg" alt="notes">
+            </div>
+        </form>
+
+
+    </body> 
+</html>
