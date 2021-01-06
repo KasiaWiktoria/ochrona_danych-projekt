@@ -16,7 +16,25 @@ services:
     build: 
       context: ./uwsgi-flask/
       dockerfile: Dockerfile
+    depends_on:
+      - db
+    env_file:
+      -  ./uwsgi-flask/.env
     volumes:
-      - ./notes_app:/var/www/app
-      - ./notes_app/static:/usr/share/nginx/html
+      - ./uwsgi-flask/notes_app:/var/www/app
+      - ./uwsgi-flask/notes_app/static:/usr/share/nginx/html
+
+  db:
+    image: postgres
+    volumes:
+      - postgres_data:/var/lib/postgresql/data/
+    environment:
+      - POSTGRES_USER=p_user
+      - POSTGRES_PASSWORD=p_pass
+      - POSTGRES_DB=p_db
+
+volumes:
+  postgres_data:
+
+
 

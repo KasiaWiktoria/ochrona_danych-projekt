@@ -1,2 +1,4 @@
 flask
 uwsgi
+flask-sqlalchemy
+Werkzeug==0.16.1
