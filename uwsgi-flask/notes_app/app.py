@@ -121,25 +121,19 @@ def registration():
 
 def add_user(email, login, password):
     log.debug("Login: " + login )
-    passwd_to_hash = (password+SALT).encode("utf-8")
-    hashed_password = hashlib.sha512(passwd_to_hash).hexdigest()
-    log.debug("ok")
-    new_user = User(email.encode("utf-8"), login.encode("utf-8"), hashed_password)
-    log.debug("dodawanie do bazy danych")
-    log.debug(new_user)
-    db.session.add(new_user)
-    db.session.commit()
-    log.debug(new_user)
     try:
-        password = password.encode("utf-8")
-        hashed_password = hashlib.sha512(password + SALT).hexdigest()
+        passwd_to_hash = (password+SALT).encode("utf-8")
+        hashed_password = hashlib.sha512(passwd_to_hash).hexdigest()
+        log.debug("ok")
         new_user = User(email.encode("utf-8"), login.encode("utf-8"), hashed_password)
-        db.session.add(new_user)
+        log.debug("dodawanie do bazy danych")
         log.debug(new_user)
-        #log.debug(User.query.get(1))
+        db.session.add(new_user)
+        db.session.commit()
 
         return "OK"
-    except:
+    except Exception as e:
+        log.debug(e)
         return "Rejected!"
 
 @app.route("/notes_list")
