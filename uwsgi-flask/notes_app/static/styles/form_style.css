@@ -54,6 +54,56 @@ form.add-note-form input{
     margin: 10px 0;
 }
 
+.chbox-field{
+    flex-wrap: nowrap;
+    display: flex;
+    align-items: center;
+    width: 70%;
+    margin: 20px 0;
+}
+
+
+
+input[type="checkbox"] {
+    visibility: hidden;
+  }
+  label {
+    cursor: pointer;
+  }
+  input[type="checkbox"] + label:before {
+    outline: 1px solid #333;
+    background: none;
+    color: #fff;
+    content: "\2713";
+    display: inline-block;
+    font: 16px/1em sans-serif;
+    height: 16px;
+    margin: 0 .25em 0 0;
+    padding: 0;
+    vertical-align: top;
+    width: 16px;
+    margin-right: 20px;
+    text-align: center;
+  }
+  input[type="checkbox"]:checked + label:before {
+    background: var(--second-color);
+    color: #fff;
+    content: "\2713";
+    text-align: center;
+  }
+  input[type="checkbox"]:checked + label:after {
+    font-weight: bold;
+  }
+  
+  input[type="checkbox"]:focus + label::before {
+      outline: var(--second-color) auto 0px;
+  }
+
+
+.chbox-field input.chbox{
+    width: 10px;
+}
+
 .warning-field{
     font-size: 10px;
     margin-left: auto;

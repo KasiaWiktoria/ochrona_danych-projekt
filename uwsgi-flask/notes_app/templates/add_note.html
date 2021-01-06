@@ -8,6 +8,7 @@
         <link href="/styles/form_style.css" rel="stylesheet" type="text/css">
         <link href="/styles/main_style.css" rel="stylesheet" type="text/css">
         <link rel="shortcut icon" href="/images/favicon.ico"/>
+        <script src="/scripts/add_note.js"></script>
     </head>
     <body>
         <header>
@@ -53,6 +54,14 @@
                 <input type="text" id="title">
                 <label for="note">treść notatki: </label>
                 <textarea name="note" id="note" cols="30" rows="10"></textarea>
+
+                <div class="chbox-field">
+                    <input class="chbox" type="checkbox" onclick="enable()" id="public">                        
+                    <label for="public">publiczna notatka</label>
+                </div>
+
+                <label id='label_wcr' for="who_can_read">użytkownicy, którym chesz udostępnić notatkę: </label>
+                <input id="who_can_read" type="text" id="who_can_read">
                 
                 <div class="btn-block">
                     <input class="btn" id="button-submit-form" type="submit" value="Dodaj notatkę"/>               

@@ -1,5 +1,6 @@
 from flask import Flask, flash, render_template, make_response, session, url_for, redirect, request, abort, jsonify, send_from_directory#, logging
 import logging
+from sqlalchemy.dialects.postgresql import JSON
 from werkzeug.utils import secure_filename
 import hashlib
 from uuid import uuid4
@@ -42,6 +43,8 @@ class Note(db.Model):
     author = db.Column(db.String(70))
     date = db.Column(db.DateTime, default=datetime.datetime.utcnow)
     text = db.Column(db.Text(500))
+    public = db.Column(db.Boolean, default=False)
+    who_can_read = db.Column(JSON, nullable=True)
 
     def __init__(self, title, author, date, text):
         self.__title = title
