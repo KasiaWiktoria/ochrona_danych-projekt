@@ -1,5 +1,6 @@
 GET = "GET"
 POST = "POST"
+SECRET_KEY = "SECRET_KEY_FOR_APP"
 
 SESSION_ID = "session"
 
