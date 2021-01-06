@@ -58,7 +58,7 @@ body h2{
 
 a img {
     width: 30px;
-    margin: 0 30px;
+    margin: 0 15px;
 }
 
 a:hover img {
@@ -136,6 +136,22 @@ nav ul li a:hover {
     background-color: var(--main-color); 
     color: #ffffff;   
     border-radius: 25px;
+}
+
+nav .left_panel a{
+    color: var(--main-color);
+}
+
+
+nav .left_panel a:hover{
+    text-shadow: 2px 2px 3px #0000004e;
+}
+
+
+nav .left_panel{
+    width: 150px;
+    display: flex;
+    justify-content: center;
 }
 
 

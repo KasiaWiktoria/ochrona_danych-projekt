@@ -1,0 +1,18 @@
+.author{
+    font-size: 21px;
+    color: var(--main-color);
+    padding-bottom: 10px;
+}
+
+.title{
+    font-size: 32px;
+    color: var(--second-color);
+    padding-bottom: 15px;
+}
+
+.note_field{
+    padding: 20px;
+    border: var(--main-color);
+    border-style: dotted;
+    margin-bottom: 30px;
+}

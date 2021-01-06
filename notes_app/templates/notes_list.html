@@ -4,7 +4,7 @@
         <title>notes</title>
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width", initial-scale=1.0">
-        <link href="/styles/index.css" rel="stylesheet" type="text/css">
+        <link href="/styles/list.css" rel="stylesheet" type="text/css">
         <link href="/styles/main_style.css" rel="stylesheet" type="text/css">
         <link rel="shortcut icon" href="/images/favicon.ico"/>
     </head>
@@ -19,13 +19,17 @@
                     <ul>
                         <li><a href="/">Strona główna</a></li>
                         <li><a href="/notes">Moje notatki</a></li>
+                        <li><a href="/add_note">Dodaj notatkę</a></li>
                         <li><a href="/login">Zaloguj się</a></li>
                     </ul>
                 </div>
             </nav>
-            <a href="/login">
-                <img src="/images/konto.svg" alt="moje konto"> 
-            </a>
+            <div class="left_panel">
+                <a href="/logout">Wyloguj</a>
+                <a href="/login">
+                    <img src="/images/konto.svg" alt="moje konto"> 
+                </a>
+            </div>
         </header>
 
         <section class="nav-block">
@@ -34,16 +38,34 @@
             <a href="/my_notes">Moje</a>
         </section>
 
+        <div class="max-width-elem">
+            <a id="logout_button" class="btn" href="/add_note" method="POST">Dodaj notatkę</a>
+        </div>
+
         <section class="text">
             
             <h1 id="title">Lista twoich notatek</h1>
 
             <div class="notes_list">
                 <div class="note_field">
-                    <div class="author"></div>
-                    <div class="date"></div>
+                    <div class="title">Tytuł notatki 1</div>
+                    <div class="author">Kasia S.</div>
+                    <div class="date">24-08-2016</div>
+                    <p class="text">Jakaś treść notatki. Jakaś treść notatki. Jakaś treść notatki. Jakaś treść notatki. Jakaś treść notatki. Jakaś treść notatki. Jakaś treść notatki. </p>
+                </div>
+
+                <div class="note_field">
+                    <title>___Tytuł notatki 2___</title>
+                    <div class="author">Julia S.</div>
+                    <div class="date">1-03-2015</div>
+                    <p class="text">Jakaś treść notatki. Jakaś treść notatki. Jakaś treść notatki. Jakaś treść notatki. Jakaś treść notatki. Jakaś treść notatki. Jakaś treść notatki. </p>
+                </div>
+
+                <div class="note_field">
+                    <div class="author">Weronika</div>
+                    <div class="date">12-10-2013</div>
                     <title></title>
-                    <p class="text"></p>
+                    <p class="text">Jakaś treść notatki. Jakaś treść notatki. Jakaś treść notatki. Jakaś treść notatki. Jakaś treść notatki. Jakaś treść notatki. Jakaś treść notatki. </p>
                 </div>
             </div>
             

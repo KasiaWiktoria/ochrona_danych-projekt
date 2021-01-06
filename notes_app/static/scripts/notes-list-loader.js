@@ -1,5 +1,5 @@
 import {addCorrectMessage, addfailureMessage} from './form_functions.js';
-import {GET, POST, URL, HTTP_STATUS, waybillURL} from './const.js'
+import {GET, POST, URL, HTTP_STATUS, noteURL} from './const.js'
 
 let page_url = URL + 'notes_list'
 document.addEventListener('DOMContentLoaded', function (event) {
@@ -18,82 +18,59 @@ function loadNotes(page_url){
             let n_of_notes = response.notes.length
             if (n_of_notes > 0){
                 let notes = response.notes
-                let images = response.notes_images
+                //let images = response.notes_images
     
-                let table = document.createElement('table')
-                table.id = 'notes-table'
-                let tbody = document.createElement('tbody')
-                tbody.id = 'notes-tbody'
+                let notes_list = document.createElement('div')
+                notes_list.id = 'notes-list'
     
-                let row = tbody.insertRow()
-                let th = document.createElement('th')
-                th.innerHTML = "zdjęcie paczki"
-                row.appendChild(th)
-                th = document.createElement('th')
-                th.innerHTML = "identyfikator paczki"
-                row.appendChild(th)
-                th = document.createElement('th')
-                th.innerHTML = "pobieranie"
-                row.appendChild(th)
-                th = document.createElement('th')
-                th.innerHTML = "usuń"
-                row.appendChild(th)
-    
-                notes.forEach((waybill, idx) =>
-                    addWaybillToList(tbody, waybill, images[idx])
+                notes.forEach(note =>
+                    addNoteToList(notes_list, note)
                 )
-                table.appendChild(tbody)
-                h1.insertAdjacentElement('afterend', table)
-    
-                updateNavButtons(prev,next)
-                addNavListeners()
+                h1.insertAdjacentElement('afterend', notes_list)
             } else {
                 let empty_warning = document.createElement('div')
                 empty_warning.className = "max-width-elem empty"
                 empty_warning.id = 'empty-list-warning'
-                empty_warning.innerText = 'Nie masz żadnych paczek na swojej liście'
+                empty_warning.textContent = 'Nie masz żadnych notatek'
                 h1.insertAdjacentElement('afterend', empty_warning)
             }
         }).catch(err => {
             console.log("Caught error: " + err);
             let id = "title";
-            addfailureMessage(id,"Pobieranie paczek nie powiodło się. ")
+            addfailureMessage(id,"Pobieranie notatek nie powiodło się. ")
+            let empty_warning = document.createElement('div')
+                empty_warning.className = "max-width-elem empty"
+                empty_warning.id = 'empty-list-warning'
+                empty_warning.textContent = 'Pobieranie notatek nie powiodło się.'
+                h1.insertAdjacentElement('afterend', empty_warning)
         });
 }
 
-function addWaybillToList(tbody, waybill, image){
-    let row = tbody.insertRow()
-    let cell = row.insertCell()
-    cell.className ='img'
-    let img = document.createElement('img')
-    img.setAttribute('alt', 'zdjęcie paczki');
-    img.src = '/images/packs_images/' + image;
-    cell.appendChild(img)
+function addNoteToList(notes_list, note){
+    let note_field = document.createElement('div')
+    note_field.className = 'note-field'
 
-    cell = row.insertCell()
-    let waybill_id = document.createTextNode(waybill)
-    cell.appendChild(waybill_id)
+    let title = document.createElement('div')
+    title.className = 'title'
+    title.textContent = note.title
+    note_field.appendChild(title)
 
-    cell = row.insertCell()
-    let a = document.createElement('a')
-    a.setAttribute('href', 'https://localhost:8081/waybill/' + waybill);
-    img = document.createElement('img')
-    img.src = '/images/download.svg';
-    let p = document.createElement('p')
-    let text = document.createTextNode('Pobierz')
-    p.appendChild(text)
-    a.appendChild(img)
-    a.appendChild(p)
-    cell.appendChild(a)
+    let author = document.createElement('div')
+    author.className = 'author'
+    author.textContent = note.author
+    note_field.appendChild(author)
 
-    cell = row.insertCell()
-    a = document.createElement('a')
-    a.setAttribute('onClick', 'delete_pack("waybill")');
-    p = document.createElement('p')
-    text = document.createTextNode('usuń')
-    p.appendChild(text)
-    a.appendChild(p)
-    cell.appendChild(a)
+    let date = document.createElement('div')
+    date.className = 'date'
+    date.textContent = note.date
+    note_field.appendChild(date)
+
+    let text = document.createElement('p')
+    text.className = 'text'
+    text.textContent = note.text
+    note_field.appendChild(text)
+
+    notes_list.appendChild(note_field)
 }
 
 function updateNavButtons(prev,next){
