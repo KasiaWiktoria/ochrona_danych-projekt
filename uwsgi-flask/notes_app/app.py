@@ -1,10 +1,12 @@
-from flask import Flask, render_template, make_response, session, url_for, redirect, request, jsonify, send_from_directory, logging
+from flask import Flask, render_template, make_response, session, url_for, redirect, request, jsonify, send_from_directory#, logging
+import logging
 from werkzeug.utils import secure_filename
-import hashlib, uuid
+import hashlib
 from uuid import uuid4
 from flask_sqlalchemy import SQLAlchemy
 import datetime
 import os
+
 from .const import *
 #from note import Note
 
@@ -16,9 +18,12 @@ app.config ['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config ['MEDIA_FOLDER'] = './user-files'
 SALT = os.getenv('SALT')
 
-log = logging.create_logger(app)
+log = app.logger #logging.create_logger(app)
 db = SQLAlchemy(app)
 
+@app.before_first_request
+def before_first_request():
+    logging.basicConfig(level=logging.DEBUG)
 
 class Note(db.Model):
     __tablename__ = "notes"
@@ -116,16 +121,25 @@ def registration():
 
 def add_user(email, login, password):
     log.debug("Login: " + login )
+    passwd_to_hash = (password+SALT).encode("utf-8")
+    hashed_password = hashlib.sha512(passwd_to_hash).hexdigest()
+    log.debug("ok")
+    new_user = User(email.encode("utf-8"), login.encode("utf-8"), hashed_password)
+    log.debug("dodawanie do bazy danych")
+    log.debug(new_user)
+    db.session.add(new_user)
+    db.session.commit()
+    log.debug(new_user)
     try:
         password = password.encode("utf-8")
         hashed_password = hashlib.sha512(password + SALT).hexdigest()
         new_user = User(email.encode("utf-8"), login.encode("utf-8"), hashed_password)
         db.session.add(new_user)
         log.debug(new_user)
-        log.debug(User.query.get(1))
+        #log.debug(User.query.get(1))
 
         return "OK"
-    except Exception:
+    except:
         return "Rejected!"
 
 @app.route("/notes_list")
