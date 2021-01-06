@@ -182,7 +182,7 @@ def add_user(email, login, password):
 @app.route("/notes_list")
 def notes_list():
     user = session['user']
-    notes = User.query.filter_by(author=user)
+    notes = User.query.filter_by(login=user).all()
     log.debug(notes)
     return render_template("notes_list.html", notes=notes)
 

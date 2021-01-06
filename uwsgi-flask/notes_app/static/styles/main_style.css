@@ -138,17 +138,17 @@ nav ul li a:hover {
     border-radius: 25px;
 }
 
-nav .left_panel a{
+.left_panel a{
     color: var(--main-color);
 }
 
 
-nav .left_panel a:hover{
+.left_panel a:hover{
     text-shadow: 2px 2px 3px #0000004e;
 }
 
 
-nav .left_panel{
+.left_panel{
     width: 150px;
     display: flex;
     justify-content: center;
