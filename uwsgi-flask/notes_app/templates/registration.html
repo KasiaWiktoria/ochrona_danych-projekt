@@ -20,16 +20,30 @@
             <nav>
                 <div class="menu">
                     <ul>
+                        {% if not loggedin %}
                         <li><a href="/">Strona główna</a></li>
+                        <li><a href="/login">Zaloguj się</a></li>
+                        {% endif %}
+                        {% if loggedin %}
                         <li><a href="/notes_list">Moje notatki</a></li>
                         <li><a href="/add_note">Dodaj notatkę</a></li>
-                        <li><a href="/login">Zaloguj się</a></li>
+                        {% endif %}
                     </ul>
                 </div>
             </nav>
+            {% if loggedin %}
+            <div class="left_panel">
+                <a href="/logout">Wyloguj</a>
+                <a href="/login">
+                    <img src="/images/konto.svg" alt="moje konto"> 
+                </a>
+            </div>
+            {% endif %}
+            {% if not loggedin %}
             <a href="/login">
                 <img src="/images/konto.svg" alt="moje konto"> 
             </a>
+            {% endif %}
         </header>
 
         <section class="nav-block">
@@ -52,9 +66,6 @@
                         <input id="login" type="text" name="login"/>
                     </div>
 
-                    <label for="passwordStrength">Siła hasła: </label>
-                    <progress id="passwordStrength" value="0"></progress>
-
                     <div class="form-row">
                         <label for="password" class="required">Hasło</label>
                         <input id="password" type="password" name="password"/>
@@ -63,6 +74,11 @@
                     <div class="form-row">
                         <label for="second_password" class="required">Powtórz hasło</label>
                         <input id="second_password" type="password" name="second_password"/>
+                    </div>
+                    
+                    <div class="form-row">
+                        <label for="passwordStrength">Siła hasła: </label>
+                        <progress id="passwordStrength" value="0"></progress>
                     </div>
 
                     <div class="btn-block">

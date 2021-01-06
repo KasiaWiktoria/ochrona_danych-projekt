@@ -4,7 +4,7 @@
         <title>notes</title>
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width", initial-scale=1.0">
-        <link href="/styles/list.css" rel="stylesheet" type="text/css">
+        <link href="/styles/error.css" rel="stylesheet" type="text/css">
         <link href="/styles/main_style.css" rel="stylesheet" type="text/css">
         <link rel="shortcut icon" href="/images/favicon.ico"/>
     </head>
@@ -43,38 +43,19 @@
             {% endif %}
         </header>
 
-        <section class="nav-block">
-            <a class="selected" href="/notes_list">Wszystkie</a>
-            <a href="/shared_notes">Udostępnione</a>
-            <a href="/my_notes">Moje</a>
-        </section>
-
-        <div class="max-width-elem">
-            <a id="logout_button" class="btn" href="/add_note" method="POST">Dodaj notatkę</a>
-        </div>
-
-        <section class="text">
+        <section>
+            <h1>400!</h1>
+            <p>
+                Błędne żądanie.
+            </p>
+            <p class="small">
+                <strong>Szczegóły błędu:</strong>
+                {{error}}
+            </p>
             
-            <h1 id="title">Lista twoich notatek</h1>
-
-            <div class="notes_list">
-                <div class="note_field">
-                    <div class="title">Tytuł notatki 1</div>
-                    <div class="author">Kasia S.</div>
-                    <div class="date">24-08-2016</div>
-                    <p class="text">Jakaś treść notatki. Jakaś treść notatki. Jakaś treść notatki. Jakaś treść notatki. Jakaś treść notatki. Jakaś treść notatki. Jakaś treść notatki. </p>
-                </div>
-
-                <div class="note_field">
-                    <title>___Tytuł notatki 2___</title>
-                    <div class="author">Weronika</div>
-                    <div class="date">12-10-2013</div>
-                    <title></title>
-                    <p class="text">Jakaś treść notatki. Jakaś treść notatki. Jakaś treść notatki. Jakaś treść notatki. Jakaś treść notatki. Jakaś treść notatki. Jakaś treść notatki. </p>
-                </div>
-            </div>
+            <a href="https://localhost"> Wróć na stronę główną. </a> 
             
         </section>
 
-    </body> 
+    </body>
 </html>

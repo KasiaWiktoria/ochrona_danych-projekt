@@ -1,4 +1,4 @@
-from flask import Flask, render_template, make_response, session, url_for, redirect, request, jsonify, send_from_directory#, logging
+from flask import Flask, flash, render_template, make_response, session, url_for, redirect, request, abort, jsonify, send_from_directory#, logging
 import logging
 from werkzeug.utils import secure_filename
 import hashlib
@@ -15,7 +15,7 @@ app = Flask(__name__, static_url_path="")
 
 app.config ['SQLALCHEMY_DATABASE_URI'] =  os.getenv("DATABASE_URL", "sqlite://")
 app.config ['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-app.config ['MEDIA_FOLDER'] = './user-files'
+app.config ['UPLOAD_FOLDER'] = './user-files'
 app.config['SECRET_KEY'] = SECRET_KEY
 SALT = os.getenv('SALT')
 
@@ -79,10 +79,10 @@ def index():
     user = User.query.filter_by(login=username).first()
 
     if user is None:
-        log.debug('user ----- none')
+        log.debug('user -- none')
     else:
         log.debug(f'user {user}')
-    return render_template("index.html")
+    return render_template("index.html", loggedin=active_session())
 
 @app.route("/login", methods=[GET,POST])
 def login():
@@ -117,7 +117,10 @@ def login():
             response = make_response("Błędny login lub hasło", 400)
             return response 
     else:
-        return render_template("login.html")
+        if not active_session():
+            return render_template("login.html", loggedin=active_session())
+        else:
+            return make_response(render_template("errors/already-logged-in.html", loggedin=active_session()))
 
 def check_passwd(username, password):
     log.debug('sprawdzenie hasła')
@@ -157,7 +160,10 @@ def registration():
         except:
             return { "registration_status": 400 }, 400
     else:
-        return render_template("registration.html")
+        if not active_session():
+            return render_template("registration.html", loggedin=active_session())
+        else:
+            abort(401)
 
 def add_user(email, login, password):
     log.debug("Login: " + login )
@@ -181,42 +187,67 @@ def add_user(email, login, password):
 
 @app.route("/notes_list")
 def notes_list():
-    user = session['user']
-    notes = User.query.filter_by(login=user).all()
-    log.debug(notes)
-    return render_template("notes_list.html", notes=notes)
+    if active_session():
+        user = session['user']
+        notes = User.query.filter_by(login=user).all()
+        log.debug(notes)
+        return render_template("notes_list.html", notes=notes, loggedin=active_session())
+    else:
+        abort(401)
 
 @app.route("/add_note", methods=[GET,POST])
 def add_note():
     if request.method == POST:
         return 
     else:
-        return render_template("add_note.html")
+        if active_session():
+            return render_template("add_note.html", loggedin=active_session())
+        else:
+            abort(401)
 
-@app.route("/media/<path:filename>")
-def mediafiles(filename):
-    return send_from_directory(app.config["MEDIA_FOLDER"], filename)
 
+def allowed_file(filename):
+    return '.' in filename and \
+           filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
-@app.route("/upload", methods=["GET", "POST"])
+@app.route('/upload', methods=['GET', 'POST'])
 def upload_file():
-    if request.method == "POST":
-        file = request.files["file"]
-        filename = secure_filename(file.filename)
-        file.save(os.path.join(app.config["MEDIA_FOLDER"], filename))
-    return f"""
+    if request.method == 'POST':
+        # check if the post request has the file part
+        if 'file' not in request.files:
+            flash('No file part')
+            return redirect(request.url)
+        file = request.files['file']
+        # if user does not select file, browser also
+        # submit an empty part without filename
+        if file.filename == '':
+            flash('No selected file')
+            return redirect(request.url)
+        if file and allowed_file(file.filename):
+            filename = secure_filename(file.filename)
+            file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+            return redirect(url_for('uploaded_file',
+                                    filename=filename))
+    return '''
     <!doctype html>
-    <title>upload new File</title>
-    <form action="" method=post enctype=multipart/form-data>
-      <p><input type=file name=file><input type=submit value=Upload>
+    <title>Upload new File</title>
+    <h1>Upload new File</h1>
+    <form method=post enctype=multipart/form-data>
+      <input type=file name=file>
+      <input type=submit value=Upload>
     </form>
-    """
+    '''
+
+@app.route('/uploads/<filename>')
+def uploaded_file(filename):
+    return send_from_directory(app.config['UPLOAD_FOLDER'], filename)
 
 def active_session():
-    log.debug(request.cookies.get(SESSION_ID))
-    hash_ = request.cookies.get(SESSION_ID)
     try:
-        session['username']
+        log.debug(f'ciasteczko sesji: {request.cookies.get(SESSION_ID)}')
+        hash_ = request.cookies.get(SESSION_ID)
+        user = session['user']
+        log.debug(f'user: {user}')
     except:
         return False
 
@@ -224,3 +255,26 @@ def active_session():
         return True
     else:
         return False
+
+
+
+
+@app.errorhandler(400)
+def bad_request(error):
+    return make_response(render_template("errors/400.html", error=error, loggedin=active_session()))
+
+@app.errorhandler(401)
+def page_unauthorized(error):
+    return make_response(render_template("errors/401.html", error=error, loggedin=active_session()))
+
+@app.errorhandler(403)
+def forbidden(error):
+    return make_response(render_template("errors/403.html", error=error, loggedin=active_session()))
+
+@app.errorhandler(404)
+def page_not_found(error):
+    return make_response(render_template("errors/404.html", error=error, loggedin=active_session()))
+    
+@app.errorhandler(500)
+def internal_server_error(error):
+    return make_response(render_template("errors/500.html", error=error, loggedin=active_session()))

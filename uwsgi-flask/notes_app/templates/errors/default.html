@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="pl">
+    <head>
+        <title>PAX</title>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width", initial-scale=1">
+        <link href="/styles/error.css" rel="stylesheet" type="text/css">
+        <link href="/styles/main_style.css" rel="stylesheet" type="text/css">
+        <link rel="shortcut icon" href="/images/favicon.ico"/>
+    </head>
+    <body>
+        <header>
+            <a href="/" class="logo">
+                <img src="/images/logo.svg" alt="logo">
+                <p><span>PAX</span> System obsługi paczek</p>
+            </a> 
+            <nav>
+                <div class="menu">
+                    <ul>
+                        <li><a href="/app/">Strona główna</a></li>
+                        {% if not loggedin %}
+                        <li><a href="/app/registration">Rejestracja</a></li>
+                        {% endif %}
+                        {% if loggedin %}
+                        <li><a href="/app/send">Nadaj paczkę</a></li>
+                        <li><a href="/app/waybills-list">Lista wysłanych paczek</a></li>
+                        {% endif %}
+                    </ul>
+                </div>
+            </nav>
+            {% if not loggedin %}
+            <a href="/app/login">
+                <img src="/images/konto.svg" alt="moje konto"> 
+            </a>
+            {% endif %}
+            {% if loggedin %}
+            <a href="/app/waybills-list">
+                <img src="/images/konto.svg" alt="moje konto"> 
+            </a>
+            {% endif %}
+        </header>
+
+        <section>
+            <h1>Błąd!</h1>
+            <p>
+                Błąd serwera.
+            </p>
+            <p class="small">
+                <strong>Szczegóły błędu:</strong>
+                {{error}}
+            </p>
+            <a href="https://localhost"> Wróć na stronę główną. </a> 
+            
+        </section>
+
+
+    </body>
+</html>

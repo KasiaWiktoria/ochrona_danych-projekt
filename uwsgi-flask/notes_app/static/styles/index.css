@@ -34,17 +34,7 @@ table tbody td{
     text-align: center;
 }
 
-section.image2 {
-    background-image: url('../images/paczki-tlo.jpg');
-    height: 400px;
-    background-repeat: no-repeat;
-    background-position: center;
-    background-size: cover;
-    background-attachment: fixed;
-}
-
 section.image {
-    background-image: url('../images/kurier.jpg');
     height: 400px;
     background-repeat: no-repeat;
     background-position: center;
