@@ -8,7 +8,7 @@
         <link href="/styles/form_style.css" rel="stylesheet" type="text/css">
         <link href="/styles/main_style.css" rel="stylesheet" type="text/css">
         <link rel="shortcut icon" href="/images/favicon.ico"/>
-        <script src="/scripts/add_note.js"></script>
+        <script type="module" src="/scripts/share_options.js"></script>
     </head>
     <body>
         <header>
@@ -56,7 +56,7 @@
                 <textarea name="note" id="note" cols="30" rows="10"></textarea>
 
                 <div class="chbox-field">
-                    <input class="chbox" type="checkbox" onclick="enable()" id="cipher">                        
+                    <input class="chbox" type="checkbox" id="cipher">                        
                     <label for="cipher">zaszyfruj notatkę</label>
                 </div>
 
@@ -66,8 +66,8 @@
                 </div>
 
                 <div class="chbox-field">
-                    <input class="chbox" type="checkbox" onclick="enable();return false;" id="public">                        
-                    <label for="public">publiczna notatka</label>
+                    <input class="chbox" type="checkbox" id="public">                        
+                    <label for="public" id="chbox_public">publiczna notatka</label>
                 </div>
 
                 <label class="chbox_disable" id='label_wcr' for="who_can_read">użytkownicy, którym chesz udostępnić notatkę: </label>
@@ -77,7 +77,7 @@
                 </p>
                 <div class="form-row" id="add-form-row">
                     <input id="who_can_read" type="text" id="who_can_read">
-                    <button href="" id="add_btn" class="btn" onclick="add_to_list();return false;">Dodaj</button>
+                    <button type="button" id="add_btn" class="btn">Dodaj</button>
                 </div>
 
                 <p id="wcr_list" class="chbox_disable">
@@ -85,7 +85,7 @@
                 </p>
                 
                 <div class="btn-block">
-                    <input href="" class="btn" id="button-submit-form" type="submit" value="Dodaj notatkę"/>               
+                    <input class="btn" id="button-submit-form" type="submit" value="Dodaj notatkę"/>               
                 </div>
             </form>
         </section>

@@ -50,9 +50,6 @@ function isPasswdBlank(){
 function submitLoginForm(form, name) {
     let loginUrl = URL + name;
     console.log(loginUrl);
-    let successMessage = "Zalogowano pomyślnie.";
-    let failureMessage = "Błędny login lub hasło.";
-    
 
     let registerParams = {
         method: POST,
@@ -102,10 +99,3 @@ function prepareEventOnChange(FIELD_ID, validationFunction) {
     let loginInput = document.getElementById(FIELD_ID);
     loginInput.addEventListener("change", updateCorrectnessMessage.bind(event, FIELD_ID, validationFunction));
 }
-
-
-
-function checkLoginaAttempt(){
-
-}
-

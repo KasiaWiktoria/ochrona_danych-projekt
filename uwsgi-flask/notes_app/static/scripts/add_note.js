@@ -1,128 +1,78 @@
-let users_who_can_read = []
+import {addCorrectMessage, addfailureMessage, submitForm, updateCorrectnessMessage, prepareOtherEventOnChange} from './form_functions.js';
+import {showWarningMessage, removeWarningMessage, prepareWarningElem, appendAfterElem} from './warning_functions.js';
+import {isAnyFieldBlank, isLoginAvailable, validateLogin, validatePasswd, arePasswdsTheSame} from './validation_functions.js';
+import {GET, POST, URL, HTTP_STATUS, LOGIN_FIELD_ID, PASSWD_FIELD_ID} from './const.js'
 
 
-function enable(){
-    console.log("funkcja enable on click")
-    let input = document.getElementById('who_can_read');
-    let chbox = document.getElementById('public')
-    let add_btn = document.getElementById('add_btn')
-    let chbox_disable = document.getElementsByClassName('chbox_disable')
-    console.log(chbox_disable)
+document.addEventListener('DOMContentLoaded', function (event) {
 
+    let newNoteForm = document.getElementById("add-note-form");
 
-    console.log(chbox.checked)
-    if(chbox.checked){ 
-        console.log("disabled")
-        input.disabled=true;
-        add_btn.disabled = true
-        add_btn.style.backgroundColor = '#0000003e'
-        for(i=0; i < chbox_disable.length;i++){
-            chbox_disable[i].style.color = '#0000003e'            
-        }
-    }else{
-        console.log("enabled")
-        input.disabled = false; 
-        add_btn.disabled = false
-        add_btn.style.backgroundColor = 'var(--main-color)'
-        input.focus();
-        for(i=0; i < chbox_disable.length;i++){
-            chbox_disable[i].style.color = '#000'            
-        }
-    }
-}
+    newNoteForm.addEventListener("submit", function (event) {
+        event.preventDefault();
 
-function add_to_list(){
-    removeWarningMessage("blankWarning")
-    let input = document.getElementById('who_can_read');
-    if(!isBlank(input)){
-        let warning = validateEmail(input.value)
-        if(warning != ""){
-            let message = warning;
-            let warningElemId = "blankWarning"
-            let warningElem = prepareWarningElem(warningElemId, message);
-            appendAfterElem("add-form-row", warningElem);
+        let login = document.getElementById(LOGIN_FIELD_ID);
+        let password = document.getElementById(PASSWD_FIELD_ID);
+
+        let fields = [login, password];
+        if(!isAnyFieldBlank(fields)) {
+            submitNoteForm(newNoteForm, "add_note");
         } else {
-            console.log('ok')
-            add_email_to_list()
+            let id = "button-submit-form";
+            addfailureMessage(id,"Żadne pole nie może pozostać puste.")
         }
-    }else{
-        console.log('blank')
-    }
+    });
+});
 
+function submitNoteForm(form, name) {
+    let loginUrl = URL + name;
+    console.log(loginUrl);
+
+    let registerParams = {
+        method: POST,
+        mode: 'cors',
+        body: new FormData(form),
+        redirect: "follow"
+    };
+
+    fetch(loginUrl, registerParams)
+            .then(response => getResponseData(response))
+            .then(response =>showMessages(response))
+            .catch(err => {
+                console.log("Caught error: " + err);
+                let id = "button-submit-form";
+                addfailureMessage(id,'Nie udało się wysłać zapytania');
+            });
 }
 
-function add_email_to_list(){
-    let email = document.getElementById('who_can_read').value
-
-    console.log('email: ' + email)
-    if (!users_who_can_read.includes(email)){
-        users_who_can_read.push(email)
-        show_email_on_list(email)
-    }else{
-        let message = "ten użytkownik został już dodany na listę.";
-        let warningElemId = "blankWarning"
-        let warningElem = prepareWarningElem(warningElemId, message);
-        appendAfterElem("add-form-row", warningElem);
-    }
-    console.log('lista: ' + users_who_can_read)
+function getResponseData(response) {
+    return response.json()
 }
 
-function show_email_on_list(email){
-    let wcr_list = document.getElementById('wcr_list')
-    wcr_list.textContent = wcr_list.textContent + '    ' + email
-}
+function showMessages(response) {
+    let status = response.status;
+    let id = "button-submit-form";
 
+    if (status === HTTP_STATUS.OK) {
+        console.log("Logged in successfully.");
 
-function isBlank(field) {
-    if (field.value == "") {
-        let message = "aby dodać, wpisz jakąś wartość.";
-        let warningElemId = "blankWarning"
-        let warningElem = prepareWarningElem(warningElemId, message);
-        appendAfterElem("add-form-row", warningElem);
-        return true;
-    }
-    return false
-}
-
-function prepareWarningElem(newElemId, message) {
-    let warningField = document.getElementById(newElemId);
-
-    if (warningField === null) {
-        let textMessage = document.createTextNode(message);
-        warningField = document.createElement('span');
-
-        warningField.setAttribute("id", newElemId);
-        warningField.className = "warning-field";
-        warningField.style.textAlign = "center"
-        warningField.appendChild(textMessage);
-    }
-    return warningField;
-}
-
-function appendAfterElem(currentElemId, newElem) {
-    let currentElem = document.getElementById(currentElemId);
-    currentElem.insertAdjacentElement('afterend', newElem);
-}
-
-function removeWarningMessage(warningElemId) {
-    let warningElem = document.getElementById(warningElemId);
-
-    if (warningElem !== null) {
-        warningElem.remove();
+        addCorrectMessage(id,response.msg)
+        window.location.href = 'notes_list'
+    } else if (status == HTTP_STATUS.BAD_REQUEST) {
+        console.log("Która to próba logowania: " + response.login_attempt_counter)
+        console.log("Incorrect authorization data.")
+        addfailureMessage(id,response.msg)
+    } else if (status == HTTP_STATUS.FORBIDDEN) {
+        console.log("To many login attempts.")
+        addfailureMessage(id,response.msg)
+    } else {
+        console.error("Response status code: " + response.status);
+        addfailureMessage(id,"Logowanie nie powiodło się. Nie jesteśmy w stanie zweryfikować poprawności wprowadzonych danych.")
+        throw "Unexpected response status: " + response.status;
     }
 }
 
-
-function validateEmail(emailInput){
-    if(RegExp("^\s$").test(emailInput)){
-        return "Email nie może zawierać spacji.";
-    } else if ((RegExp("^[ąćęłńóśźżĄĆĘŁŃÓŚŹŻ]+$").test(emailInput))){
-        return "Email nie może zawierać polskich znaków.";
-    } else if (!(RegExp("^[\\w-\\.]+@([\\w-]+\\.)+[\\w-]{2,4}$").test(emailInput))){
-        return "Niepoprawna forma adresu email.";
-    } else if(emailInput.length < 4 ){
-        return "Login musi mieć powyżej 4 znaków."
-    }else{
-        return "";
-    }
+function prepareEventOnChange(FIELD_ID, validationFunction) {
+    let loginInput = document.getElementById(FIELD_ID);
+    loginInput.addEventListener("change", updateCorrectnessMessage.bind(event, FIELD_ID, validationFunction));
 }
