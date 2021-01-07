@@ -112,7 +112,7 @@ def login():
         log.debug(f'IP adress: {ip_address}')
 
         minute_ago = datetime.utcnow() - timedelta(seconds=60)
-        attempts_count = len(LoginAttempt.query.filter(LoginAttempt.ip_address==ip_address, LoginAttempt.login_attempt_date > minute_ago, LoginAttempt.success=False).all())
+        attempts_count = len(LoginAttempt.query.filter(LoginAttempt.ip_address==ip_address, LoginAttempt.login_attempt_date > minute_ago, LoginAttempt.success==False).all())
         log.debug(f'Liczba prób zarejestrowana w bazie danych w ciągu ostatniej minuty: {attempts_count}')
         n = attempts_count
         if n is not None and n > 3:
@@ -138,11 +138,11 @@ def login():
                 response.set_cookie(SESSION_ID, hash_,  max_age=300, secure=True, httponly=True)
 
                 try:
-            new_ip_addr = LoginAttempt(ip_address=ip_address, login_attempt_date=datetime.utcnow(), success=True)
-            db.session.add(new_ip_addr)
-            db.session.commit()
-        except Exception as e:
-            log.debug(e)
+                    new_ip_addr = LoginAttempt(ip_address=ip_address, login_attempt_date=datetime.utcnow(), success=True)
+                    db.session.add(new_ip_addr)
+                    db.session.commit()
+                except Exception as e:
+                    log.debug(e)
 
                 return response
 

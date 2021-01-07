@@ -66,15 +66,26 @@
                 </div>
 
                 <div class="chbox-field">
-                    <input class="chbox" type="checkbox" onclick="enable()" id="public">                        
+                    <input class="chbox" type="checkbox" onclick="enable();return false;" id="public">                        
                     <label for="public">publiczna notatka</label>
                 </div>
 
-                <label id='label_wcr' for="who_can_read">użytkownicy, którym chesz udostępnić notatkę: </label>
-                <input id="who_can_read" type="text" id="who_can_read">
+                <label class="chbox_disable" id='label_wcr' for="who_can_read">użytkownicy, którym chesz udostępnić notatkę: </label>
+                <p id='descr' class="chbox_disable">
+                    Wpisz emaile użytkowników, którym chcesz udostępnić dostęp do tej notatki. 
+                    Wpisuj emaile pojedyńczo a następnike kliknij zatwierdź, aby dodać użytkownika do listy.
+                </p>
+                <div class="form-row" id="add-form-row">
+                    <input id="who_can_read" type="text" id="who_can_read">
+                    <button href="" id="add_btn" class="btn" onclick="add_to_list();return false;">Dodaj</button>
+                </div>
+
+                <p id="wcr_list" class="chbox_disable">
+                    Lista osób którym udostępniasz tą notatkę:
+                </p>
                 
                 <div class="btn-block">
-                    <input class="btn" id="button-submit-form" type="submit" value="Dodaj notatkę"/>               
+                    <input href="" class="btn" id="button-submit-form" type="submit" value="Dodaj notatkę"/>               
                 </div>
             </form>
         </section>
