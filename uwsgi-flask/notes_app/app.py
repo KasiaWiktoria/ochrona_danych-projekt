@@ -45,7 +45,7 @@ class Note(db.Model):
     text = db.Column(db.Text)
     public = db.Column(db.Boolean, default=False)
     who_can_read = db.Column(JSON, nullable=True)
-    decrypted = db.Column(db.Boolean, default=False)
+    encrypted = db.Column(db.Boolean, default=False)
     hashed_passwd = db.Column(db.String(200))
 
     def __init__(self, title, author, text):
@@ -241,8 +241,35 @@ def notes_list():
 
 @app.route("/add_note", methods=[GET,POST])
 def add_note():
+    log.debug('funkcja add_note?')
     if request.method == POST:
-        return 
+        log.debug(request.form)
+        title = request.form[TITLE_FIELD_ID]
+        log.debug(f'dodawanie notatki: {title}')
+
+        note_content = request.form[NOTE_CONTENT_FIELD_ID]
+        encrypt = request.form[ENCRYPT_FIELD_ID]
+        public = request.form[PUBLIC_FIELD_ID]
+        who_can_read = request.form[WHO_CAN_READ_FIELD_ID]
+
+        newNote = Note()
+
+        if encrypt:
+            encrypt_passwd = request.form[ENCRYPT_PASSWD_FIELD_ID]
+
+        if who_can_read:
+
+
+        
+
+        try:
+            log.debug(title)
+        except Exception as e:
+            log.debug(e)
+            return make_response(jsonify({"msg": str(e), "status":400}), 400)
+
+
+        return make_response(jsonify({"msg": "ok", "status":200}), 200)
     else:
         if active_session():
             return render_template("add_note.html", loggedin=active_session())

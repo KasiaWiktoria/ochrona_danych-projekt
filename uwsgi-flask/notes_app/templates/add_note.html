@@ -8,7 +8,7 @@
         <link href="/styles/form_style.css" rel="stylesheet" type="text/css">
         <link href="/styles/main_style.css" rel="stylesheet" type="text/css">
         <link rel="shortcut icon" href="/images/favicon.ico"/>
-        <script type="module" src="/scripts/share_options.js"></script>
+        <script type="module" src="/scripts/add_note.js"></script>
     </head>
     <body>
         <header>
@@ -49,20 +49,20 @@
             
             <h1 id="title">Dodaj notatkę</h1>
 
-            <form class="add-note-form">
-                <label for="title">tytuł: </label>
-                <input type="text" id="title">
+            <form class="add-note-form" id="add-note-form">
+                <label for="note_title">tytuł: </label>
+                <input type="text" id="note_title">
                 <label for="note">treść notatki: </label>
-                <textarea name="note" id="note" cols="30" rows="10"></textarea>
+                <textarea name="note" id="note_content" cols="30" rows="10"></textarea>
 
                 <div class="chbox-field">
-                    <input class="chbox" type="checkbox" id="cipher">                        
-                    <label for="cipher">zaszyfruj notatkę</label>
+                    <input class="chbox" type="checkbox" id="encrypt">                        
+                    <label for="encrypt">zaszyfruj notatkę</label>
                 </div>
 
                 <div class="form-row">
-                    <label id='label_passwd' for="passwd">Podaj hasło do zaszyfrowania notatki: </label>
-                    <input id="passwd" type="password" id="passwd">
+                    <label id='label_passwd' for="encrypt_passwd">Podaj hasło do zaszyfrowania notatki: </label>
+                    <input id="encrypt_passwd" type="password">
                 </div>
 
                 <div class="chbox-field">
