@@ -1,11 +1,11 @@
 import {addCorrectMessage, addfailureMessage, submitForm, updateCorrectnessMessage, prepareOtherEventOnChange, prepareEventOnChange} from './form_functions.js';
 import {showWarningMessage, removeWarningMessage, prepareWarningElem, appendAfterElem} from './warning_functions.js';
-import {isAnyFieldBlank, isLoginAvailable, validateLogin, validatePasswd, arePasswdsTheSame} from './validation_functions.js';
+import {isAnyFieldBlank, isLoginAvailable, validateLogin, validatePasswd, arePasswdsTheSame, validateEmail} from './validation_functions.js';
 import {GET, POST, URL, HTTP_STATUS, EMAIL_FIELD_ID, LOGIN_FIELD_ID, PASSWD_FIELD_ID, REPEAT_PASSWD_FIELD_ID} from './const.js'
 
 document.addEventListener('DOMContentLoaded', function (event) {
 
-    //prepareEventOnChange(EMAIL_FIELD_ID, validateEmail);
+    prepareEventOnChange(EMAIL_FIELD_ID, validateEmail);
     prepareOtherEventOnChange(LOGIN_FIELD_ID, updateLoginAvailabilityMessage);
     prepareOtherEventOnChange(PASSWD_FIELD_ID, updatePasswdCorrectnessMessage);
     prepareOtherEventOnChange(REPEAT_PASSWD_FIELD_ID, updateRepeatPasswdCorrectnessMessage);

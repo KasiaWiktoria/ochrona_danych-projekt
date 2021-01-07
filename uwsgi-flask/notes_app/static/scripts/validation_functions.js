@@ -1,4 +1,4 @@
-import {GET, POST, URL, HTTP_STATUS, POLSKIE_ZNAKI, POLSKIE_ZNAKI_MALE, POLSKIE_ZNAKI_DUZE, LOGIN_FIELD_ID, PASSWD_FIELD_ID, REPEAT_PASSWD_FIELD_ID} from './const.js'
+import {GET, POST, URL, HTTP_STATUS, POLSKIE_ZNAKI, EMAIL_FIELD_ID, POLSKIE_ZNAKI_MALE, POLSKIE_ZNAKI_DUZE, LOGIN_FIELD_ID, PASSWD_FIELD_ID, REPEAT_PASSWD_FIELD_ID} from './const.js'
 import {prepareWarningElem, appendAfterElem } from './warning_functions.js';
 
 export function isAnyFieldBlank(fields) {
@@ -38,108 +38,16 @@ export function noSpecialCharacters(FIELD_ID) {
     }
 }
 
-export function validateName(NAME_FIELD_ID) {
-    let nameInput = document.getElementById(NAME_FIELD_ID).value;
-
-    if(RegExp("^\s$").test(nameInput)){
-        return "Wpisz tylko jedno imię";
-    }else if (!(RegExp("^[" + POLSKIE_ZNAKI +"]+$").test(nameInput))){
-        return "Imię może zawierać tylko litery.";
-    }else if (!(RegExp("^[" + POLSKIE_ZNAKI_DUZE +"].*$").test(nameInput))){
-        return "Imię musi zaczynać się wielką literą."
-    }else {
-        return "";
-    }
-}
-
-export function validateSurname(SURNAME_FIELD_ID) {
-    let surnameInput = document.getElementById(SURNAME_FIELD_ID).value;
-
-    if(/^ +$/.test(surnameInput)){
-        return "Nazwisko nie może zawierać spacji. W przypadku dwuczłonowego nazwiska wpisz '-' pomiędzy";
-    }else if (!(RegExp("^[" + POLSKIE_ZNAKI +"\-]+$").test(surnameInput))){
-        return "Nazwisko może zawierać tylko litery i opcjonalnie jeden znak '-'.";
-    }else if (!(RegExp("^[" + POLSKIE_ZNAKI_DUZE +"].*$").test(surnameInput))){
-        return "Nazwisko musi zaczynać się wielką literą."
-    }else if ((RegExp("^([" + POLSKIE_ZNAKI_DUZE +"][" + POLSKIE_ZNAKI_MALE +"]+)-.*$").test(surnameInput)) && !(RegExp("^([" + POLSKIE_ZNAKI_DUZE +"][" + POLSKIE_ZNAKI_MALE +"]+)-[" + POLSKIE_ZNAKI_DUZE +"].*$").test(surnameInput))){
-        return "Drugi człon nazwiska musi zaczynać się wielką literą.";
-    }else if(RegExp("^([" + POLSKIE_ZNAKI_DUZE +"][" + POLSKIE_ZNAKI_MALE +"]+)-[" + POLSKIE_ZNAKI_DUZE +"]*$").test(surnameInput)){
-        return "Drugie nazwisko musi mieć więcej niż jedną literę.";
-    }else{
-        return "";
-    }
-}
-
-export function validateBDate(BDATE_FIELD_ID){
-    let bdateInput = document.getElementById(BDATE_FIELD_ID).value;
-
-    if(!(/^\d{4}-\d{2}-\d{2}$/.test(bdateInput))){
-        return "Data powinna mieć format dd.mm.rrrr";
-    }else{
-        return "";
-    }
-}
-
-export function validatePesel(PESEL_FIELD_ID) {
-    let peselInput = document.getElementById(PESEL_FIELD_ID).value;
-    
-    if (peselInput.length == 11 && !isNaN(peselInput)) {
-        
-        let a = parseInt(peselInput.charAt(0));
-        let b = parseInt(peselInput.charAt(1));
-        let c = parseInt(peselInput.charAt(2));
-        let d = parseInt(peselInput.charAt(3));
-        let e = parseInt(peselInput.charAt(4));
-        let f = parseInt(peselInput.charAt(5));
-        let g = parseInt(peselInput.charAt(6));
-        let h = parseInt(peselInput.charAt(7));
-        let i = parseInt(peselInput.charAt(8));
-        let j = parseInt(peselInput.charAt(9));
-        let k = parseInt(peselInput.charAt(10));
-        let sum = 1*a + 3*b + 7*c + 9*d + 1*e + 3*f + 7*g + 9*h + 1*i + 3*j;
-    
-        if (10 - sum%10 == k){
-            return "";
-        } else{
-            return "Podany pesel jest nieprawidłowy.";
-        }
-    
-        } else {
-        return "Podany pesel jest nieprawidłowy.";
-    }   
-}
-
-export function validateCountry(COUNTRY_FIELD_ID){
-    return alphabetOnly(COUNTRY_FIELD_ID);
-}
-
-export function validatePostalCode(POSTAL_CODE_FIELD_ID){
-    return noSpecialCharacters(POSTAL_CODE_FIELD_ID);
-}
-
-export function validateCity(CITY_FIELD_ID){
-    return alphabetOnly(CITY_FIELD_ID);
-}
-
-export function validateStreet(STREET_FIELD_ID){
-    return noSpecialCharacters(STREET_FIELD_ID);
-}
-
-export function validateHouseNr(HOUSE_NR_FIELD_ID) {
-    let houseNrInput = document.getElementById(HOUSE_NR_FIELD_ID).value;
-
-    if (!(RegExp("^\\d+[a-zA-Z]?$").test(houseNrInput))){
-        return "Numer domu może zawierać tylko cyfry i opcjonalnie jedną literę.";
-    }else{
-        return "";
-    }
-}
-
-export function validatePhone(PHONE_FIELD_ID) {
-    let phoneInput = document.getElementById(PHONE_FIELD_ID).value;
-
-    if (!(/^\d+$/.test(phoneInput))){
-        return "Numer telefonu może składać się tylko z cyfr.";
+export function validateEmail(EMAIL_FIELD_ID){
+    let emailInput = document.getElementById(EMAIL_FIELD_ID).value;
+    if(RegExp("^\s$").test(emailInput)){
+        return "Email nie może zawierać spacji.";
+    } else if ((RegExp("^[ąćęłńóśźżĄĆĘŁŃÓŚŹŻ]+$").test(emailInput))){
+        return "Email nie może zawierać polskich znaków.";
+    } else if (!(RegExp("^[\\w-\\.]+@([\\w-]+\\.)+[\\w-]{2,4}$").test(emailInput))){
+        return "Niepoprawna forma adresu email.";
+    } else if(emailInput.length < 4 ){
+        return "Login musi mieć powyżej 4 znaków."
     }else{
         return "";
     }

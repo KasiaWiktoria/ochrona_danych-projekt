@@ -35,8 +35,16 @@ function add_to_list(){
     removeWarningMessage("blankWarning")
     let input = document.getElementById('who_can_read');
     if(!isBlank(input)){
-        console.log('ok')
-        add_email_to_list()
+        let warning = validateEmail(input.value)
+        if(warning != ""){
+            let message = warning;
+            let warningElemId = "blankWarning"
+            let warningElem = prepareWarningElem(warningElemId, message);
+            appendAfterElem("add-form-row", warningElem);
+        } else {
+            console.log('ok')
+            add_email_to_list()
+        }
     }else{
         console.log('blank')
     }
@@ -47,7 +55,7 @@ function add_email_to_list(){
     let email = document.getElementById('who_can_read').value
 
     console.log('email: ' + email)
-    if (!users_who_can_read.includes()){
+    if (!users_who_can_read.includes(email)){
         users_who_can_read.push(email)
         show_email_on_list(email)
     }else{
@@ -101,5 +109,20 @@ function removeWarningMessage(warningElemId) {
 
     if (warningElem !== null) {
         warningElem.remove();
+    }
+}
+
+
+function validateEmail(emailInput){
+    if(RegExp("^\s$").test(emailInput)){
+        return "Email nie może zawierać spacji.";
+    } else if ((RegExp("^[ąćęłńóśźżĄĆĘŁŃÓŚŹŻ]+$").test(emailInput))){
+        return "Email nie może zawierać polskich znaków.";
+    } else if (!(RegExp("^[\\w-\\.]+@([\\w-]+\\.)+[\\w-]{2,4}$").test(emailInput))){
+        return "Niepoprawna forma adresu email.";
+    } else if(emailInput.length < 4 ){
+        return "Login musi mieć powyżej 4 znaków."
+    }else{
+        return "";
     }
 }
