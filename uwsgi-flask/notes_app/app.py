@@ -5,7 +5,7 @@ from werkzeug.utils import secure_filename
 import hashlib
 from uuid import uuid4
 from flask_sqlalchemy import SQLAlchemy
-import datetime
+from datetime import datetime, timedelta
 import os
 
 from .const import *
@@ -31,7 +31,7 @@ users = db.Table('users',
     db.Column('id', db.Integer, primary_key=True),
     db.Column('title', db.String(200)),
     db.Column('author', db.String(50)),
-    db.Column('date', db.DateTime, default=datetime.datetime.utcnow),
+    db.Column('date', db.DateTime, default=datetime.utcnow()),
     db.Column('text', db.String(500))
 )
 '''
@@ -41,7 +41,7 @@ class Note(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String(200))
     author = db.Column(db.String(70))
-    date = db.Column(db.DateTime, default=datetime.datetime.utcnow())
+    date = db.Column(db.DateTime, default=datetime.utcnow())
     text = db.Column(db.Text)
     public = db.Column(db.Boolean, default=False)
     who_can_read = db.Column(JSON, nullable=True)
@@ -51,7 +51,7 @@ class Note(db.Model):
     def __init__(self, title, author, text):
         self.__title = title
         self.__author = author
-        self.__date = datetime.datetime.utcnow().strftime('%d %B %Y - %H:%M:%S')
+        self.__date = datetime.utcnow().strftime('%d %B %Y - %H:%M:%S')
         self.__text = text
 
 class User(db.Model):
@@ -76,12 +76,12 @@ class Session(db.Model):
     def __repr__(self):
         return '<Session %r>' % self.session_id
 
-class LogginAttempt(db.Model):
-    __tablename__ = "logginAttemptsForIp"
+class LoginAttempt(db.Model):
+    __tablename__ = "loginAttemptsForIp"
 
     id = db.Column(db.Integer, primary_key=True)
-    ip_address = db.Column(db.String(100), unique=True, nullable=False)
-    login_attempt_date = db.Column(db.DateTime, default=datetime.datetime.utcnow())
+    ip_address = db.Column(db.String(100), nullable=False)
+    login_attempt_date = db.Column(db.DateTime)
     success = db.Column(db.Boolean, default=False)
     #failed_login_attempts = db.Column(db.Integer, nullable=False)
 
@@ -93,6 +93,12 @@ db.create_all()
 
 @app.route("/")
 def index():
+    ip_address = request.remote_addr
+    log.debug(f'IP adress: {ip_address}')
+    minute_ago = datetime.utcnow() - timedelta(seconds=60)
+    attempts_count = len(LoginAttempt.query.filter(LoginAttempt.ip_address==ip_address, LoginAttempt.login_attempt_date > minute_ago).all())
+
+    log.debug(f'ile jest dat logowania pomiędzy: {attempts_count}')
     return render_template("index.html", loggedin=active_session())
 
 @app.route("/login", methods=[GET,POST])
@@ -105,10 +111,12 @@ def login():
         ip_address = request.remote_addr
         log.debug(f'IP adress: {ip_address}')
 
-        #now = datetime.datetime.utcnow() - timedelta()
-        #atempts_count = len(LogginAttempt.query.filter_by(ip_address=ip_address, login_attempt_date > ).all())
-        n = request.cookies.get(LOGIN_ATTEMPT_COUNTER)
+        minute_ago = datetime.utcnow() - timedelta(seconds=60)
+        attempts_count = len(LoginAttempt.query.filter(LoginAttempt.ip_address==ip_address, LoginAttempt.login_attempt_date > minute_ago, LoginAttempt.success=False).all())
+        log.debug(f'Liczba prób zarejestrowana w bazie danych w ciągu ostatniej minuty: {attempts_count}')
+        n = attempts_count
         if n is not None and n > 3:
+
             response = make_response(jsonify({'msg': "Wykorzystałeś limit prób logowania. Spróbuj ponownie za 60 s", "status": 403}), 403)
             return response
 
@@ -128,9 +136,13 @@ def login():
                 log.debug('okokokok')
                 response = make_response(jsonify({'msg': "Zalogowano pomyślnie", "status": 200}), 200)
                 response.set_cookie(SESSION_ID, hash_,  max_age=300, secure=True, httponly=True)
-                response.set_cookie(LOGIN_ATTEMPT_COUNTER, bytes(n),  max_age=0)
 
-                #dodać poprawne logownanie do bazy danych
+                try:
+            new_ip_addr = LoginAttempt(ip_address=ip_address, login_attempt_date=datetime.utcnow(), success=True)
+            db.session.add(new_ip_addr)
+            db.session.commit()
+        except Exception as e:
+            log.debug(e)
 
                 return response
 
@@ -138,10 +150,9 @@ def login():
             n = 0
         n+=1
         response = make_response(jsonify({LOGIN_ATTEMPT_COUNTER: n, 'msg': "Błędny login lub hasło", "status": 400}), 400)
-        response.set_cookie(LOGIN_ATTEMPT_COUNTER, bytes(n),  max_age=60, secure=True, httponly=True)
 
         try:
-            new_ip_addr = LogginAttempt(ip_address=ip_address)
+            new_ip_addr = LoginAttempt(ip_address=ip_address, login_attempt_date=datetime.utcnow())
             db.session.add(new_ip_addr)
             db.session.commit()
         except Exception as e:
