@@ -56,6 +56,16 @@
                 <textarea name="note" id="note" cols="30" rows="10"></textarea>
 
                 <div class="chbox-field">
+                    <input class="chbox" type="checkbox" onclick="enable()" id="cipher">                        
+                    <label for="cipher">zaszyfruj notatkę</label>
+                </div>
+
+                <div class="form-row">
+                    <label id='label_passwd' for="passwd">Podaj hasło do zaszyfrowania notatki: </label>
+                    <input id="passwd" type="password" id="passwd">
+                </div>
+
+                <div class="chbox-field">
                     <input class="chbox" type="checkbox" onclick="enable()" id="public">                        
                     <label for="public">publiczna notatka</label>
                 </div>

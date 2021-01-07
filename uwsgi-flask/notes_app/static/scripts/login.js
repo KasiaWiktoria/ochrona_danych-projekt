@@ -62,7 +62,8 @@ function submitLoginForm(form, name) {
     };
 
     fetch(loginUrl, registerParams)
-            .then(response => getResponseData(response, successMessage, failureMessage))
+            .then(response => getResponseData(response))
+            .then(response =>showMessages(response))
             .catch(err => {
                 console.log("Caught error: " + err);
                 let id = "button-submit-form";
@@ -70,18 +71,26 @@ function submitLoginForm(form, name) {
             });
 }
 
-function getResponseData(response, successMessage, failureMessage) {
+function getResponseData(response) {
+    return response.json()
+}
+
+function showMessages(response) {
     let status = response.status;
     let id = "button-submit-form";
 
     if (status === HTTP_STATUS.OK) {
         console.log("Logged in successfully.");
 
-        addCorrectMessage(id,successMessage)
+        addCorrectMessage(id,response.msg)
         window.location.href = 'notes_list'
     } else if (status == HTTP_STATUS.BAD_REQUEST) {
+        console.log("Która to próba logowania: " + response.login_attempt_counter)
         console.log("Incorrect authorization data.")
-        addfailureMessage(id,failureMessage)
+        addfailureMessage(id,response.msg)
+    } else if (status == HTTP_STATUS.FORBIDDEN) {
+        console.log("To many login attempts.")
+        addfailureMessage(id,response.msg)
     } else {
         console.error("Response status code: " + response.status);
         addfailureMessage(id,"Logowanie nie powiodło się. Nie jesteśmy w stanie zweryfikować poprawności wprowadzonych danych.")
@@ -92,5 +101,11 @@ function getResponseData(response, successMessage, failureMessage) {
 function prepareEventOnChange(FIELD_ID, validationFunction) {
     let loginInput = document.getElementById(FIELD_ID);
     loginInput.addEventListener("change", updateCorrectnessMessage.bind(event, FIELD_ID, validationFunction));
+}
+
+
+
+function checkLoginaAttempt(){
+
 }
 

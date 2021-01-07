@@ -51,15 +51,14 @@ document.addEventListener('DOMContentLoaded', function (event) {
         removeWarningMessage("correct");
     
         let warningMessage = validateLogin();
+        removeWarningMessage(warningElemId);
         if (warningMessage == "") {
             console.log("Correct login!");
-            removeWarningMessage(warningElemId);
             warningMessage = "Podany login jest już zajęty.";
     
             isLoginAvailable().then(function (isAvailable) {
                 if (isAvailable) {
                     console.log("Available login!");
-                    removeWarningMessage(warningElemId);
                     AVAILABLE_LOGIN = true;
                 } else {
                     console.log("NOT available login");

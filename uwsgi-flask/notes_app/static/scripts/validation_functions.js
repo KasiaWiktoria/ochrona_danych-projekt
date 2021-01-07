@@ -164,6 +164,7 @@ export function validateFile(IMAGE_FIELD_ID) {
 export function isLoginAvailable() {
     return Promise.resolve(checkLoginAvailability().then(function (statusCode) {
         if (statusCode === HTTP_STATUS.OK) {
+            console.log('login rzeczywiście jest zajęty')
             return false;
         } else if (statusCode === HTTP_STATUS.NOT_FOUND) {
             return true

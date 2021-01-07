@@ -39,17 +39,19 @@ class Note(db.Model):
     __tablename__ = "notes"
 
     id = db.Column(db.Integer, primary_key=True)
-    title = db.Column(db.Text(200))
+    title = db.Column(db.String(200))
     author = db.Column(db.String(70))
-    date = db.Column(db.DateTime, default=datetime.datetime.utcnow)
-    text = db.Column(db.Text(500))
+    date = db.Column(db.DateTime, default=datetime.datetime.utcnow())
+    text = db.Column(db.Text)
     public = db.Column(db.Boolean, default=False)
     who_can_read = db.Column(JSON, nullable=True)
+    decrypted = db.Column(db.Boolean, default=False)
+    hashed_passwd = db.Column(db.String(200))
 
-    def __init__(self, title, author, date, text):
+    def __init__(self, title, author, text):
         self.__title = title
         self.__author = author
-        self.__date = date
+        self.__date = datetime.datetime.utcnow().strftime('%d %B %Y - %H:%M:%S')
         self.__text = text
 
 class User(db.Model):
@@ -58,7 +60,7 @@ class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     email = db.Column(db.String(128), unique=True, nullable=False)
     login = db.Column(db.String(70), unique=True, nullable=False)
-    passwd_hash = db.Column(db.Text(150), nullable=False)
+    passwd_hash = db.Column(db.String(200), nullable=False)
 
     def __repr__(self):
         return '<User %r>' % self.login
@@ -74,17 +76,23 @@ class Session(db.Model):
     def __repr__(self):
         return '<Session %r>' % self.session_id
 
+class LogginAttempt(db.Model):
+    __tablename__ = "logginAttemptsForIp"
+
+    id = db.Column(db.Integer, primary_key=True)
+    ip_address = db.Column(db.String(100), unique=True, nullable=False)
+    login_attempt_date = db.Column(db.DateTime, default=datetime.datetime.utcnow())
+    success = db.Column(db.Boolean, default=False)
+    #failed_login_attempts = db.Column(db.Integer, nullable=False)
+
+
+    def __repr__(self):
+        return f'<Loggin Attempt for {self.ip_address}: {self.login_attempts} success: {self.success}>' 
+
 db.create_all()
 
 @app.route("/")
 def index():
-    username = 'adm'
-    user = User.query.filter_by(login=username).first()
-
-    if user is None:
-        log.debug('user -- none')
-    else:
-        log.debug(f'user {user}')
     return render_template("index.html", loggedin=active_session())
 
 @app.route("/login", methods=[GET,POST])
@@ -93,6 +101,16 @@ def login():
         username = request.form[LOGIN_FIELD_ID]
         password = request.form[PASSWD_FIELD_ID]
         user = User.query.filter_by(login=username).first()
+
+        ip_address = request.remote_addr
+        log.debug(f'IP adress: {ip_address}')
+
+        #now = datetime.datetime.utcnow() - timedelta()
+        #atempts_count = len(LogginAttempt.query.filter_by(ip_address=ip_address, login_attempt_date > ).all())
+        n = request.cookies.get(LOGIN_ATTEMPT_COUNTER)
+        if n is not None and n > 3:
+            response = make_response(jsonify({'msg': "Wykorzystałeś limit prób logowania. Spróbuj ponownie za 60 s", "status": 403}), 403)
+            return response
 
         if user is not None:
             log.debug("Użytkownik " + username + " jest w bazie danych.")
@@ -108,17 +126,29 @@ def login():
                 session.permanent = True
                 session['user'] = username
                 log.debug('okokokok')
-                response = make_response(jsonify({ 'logged_in': 'OK'}))
+                response = make_response(jsonify({'msg': "Zalogowano pomyślnie", "status": 200}), 200)
                 response.set_cookie(SESSION_ID, hash_,  max_age=300, secure=True, httponly=True)
+                response.set_cookie(LOGIN_ATTEMPT_COUNTER, bytes(n),  max_age=0)
+
+                #dodać poprawne logownanie do bazy danych
 
                 return response
-            else:
-                log.debug('złe hasło')
-                response = make_response("Błędny login lub hasło", 400)
-                return response
-        else:
-            response = make_response("Błędny login lub hasło", 400)
-            return response 
+
+        if not n:
+            n = 0
+        n+=1
+        response = make_response(jsonify({LOGIN_ATTEMPT_COUNTER: n, 'msg': "Błędny login lub hasło", "status": 400}), 400)
+        response.set_cookie(LOGIN_ATTEMPT_COUNTER, bytes(n),  max_age=60, secure=True, httponly=True)
+
+        try:
+            new_ip_addr = LogginAttempt(ip_address=ip_address)
+            db.session.add(new_ip_addr)
+            db.session.commit()
+        except Exception as e:
+            log.debug(e)
+
+        return response 
+
     else:
         if not active_session():
             return render_template("login.html", loggedin=active_session())
@@ -131,7 +161,7 @@ def check_passwd(username, password):
     passwd_hash = hashlib.sha256(password).hexdigest()
     hash_from_db = User.query.filter_by(login=username).first().passwd_hash
     log.debug('pobrano hasło z bazy danych')
-    p_hash = passwd_hash[:50]
+    p_hash = passwd_hash
     log.debug(f'hash dla podanego hasła: {p_hash}')
     log.debug(f'hash dla hasła z bazy danych: {hash_from_db}')
     log.debug(f'Wynik porównania: {p_hash == hash_from_db}')
@@ -174,7 +204,7 @@ def add_user(email, login, password):
         passwd_to_hash = (password+SALT).encode("utf-8")
         hashed_password = hashlib.sha256(passwd_to_hash).hexdigest()
         log.debug("ok")
-        new_user = User(email=email, login=login, passwd_hash=hashed_password[:50])
+        new_user = User(email=email, login=login, passwd_hash=hashed_password)
         log.debug("dodawanie do bazy danych")
         log.debug(new_user)
         log.debug(User.query.all())
@@ -264,20 +294,20 @@ def active_session():
 
 @app.errorhandler(400)
 def bad_request(error):
-    return make_response(render_template("errors/400.html", error=error, loggedin=active_session()))
+    return make_response(render_template("errors/400.html", error=error, loggedin=active_session()), 400)
 
 @app.errorhandler(401)
 def page_unauthorized(error):
-    return make_response(render_template("errors/401.html", error=error, loggedin=active_session()))
+    return make_response(render_template("errors/401.html", error=error, loggedin=active_session()),401)
 
 @app.errorhandler(403)
 def forbidden(error):
-    return make_response(render_template("errors/403.html", error=error, loggedin=active_session()))
+    return make_response(render_template("errors/403.html", error=error, loggedin=active_session()),403)
 
 @app.errorhandler(404)
 def page_not_found(error):
-    return make_response(render_template("errors/404.html", error=error, loggedin=active_session()))
+    return make_response(render_template("errors/404.html", error=error, loggedin=active_session()),404)
     
 @app.errorhandler(500)
 def internal_server_error(error):
-    return make_response(render_template("errors/500.html", error=error, loggedin=active_session()))
+    return make_response(render_template("errors/500.html", error=error, loggedin=active_session()),500)
