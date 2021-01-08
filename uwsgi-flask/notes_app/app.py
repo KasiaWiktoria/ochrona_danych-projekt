@@ -42,17 +42,18 @@ class Note(db.Model):
     title = db.Column(db.String(200))
     author = db.Column(db.String(70))
     date = db.Column(db.DateTime, default=datetime.utcnow())
-    text = db.Column(db.Text)
+    note_content = db.Column(db.Text)
     public = db.Column(db.Boolean, default=False)
-    who_can_read = db.Column(JSON, nullable=True)
+    _who_can_read = db.Column(db.String(250), nullable=True)
+    @property
+    def who_can_read(self):
+        return [srt(x) for x in self._who_can_read.split(';')]
+    @who_can_read.setter
+    def who_can_read(self, value):
+        self._who_can_read += ';%s' % value
     encrypted = db.Column(db.Boolean, default=False)
     hashed_passwd = db.Column(db.String(200))
 
-    def __init__(self, title, author, text):
-        self.__title = title
-        self.__author = author
-        self.__date = datetime.utcnow().strftime('%d %B %Y - %H:%M:%S')
-        self.__text = text
 
 class User(db.Model):
     __tablename__ = "users"
@@ -233,7 +234,9 @@ def add_user(email, login, password):
 def notes_list():
     if active_session():
         user = session['user']
-        notes = User.query.filter_by(login=user).all()
+        notes = Notes.query.filter(author==user).all()
+        for note in notes:
+            note.date = note.date.strftime('%d %B %Y - %H:%M:%S')
         log.debug(notes)
         return render_template("notes_list.html", notes=notes, loggedin=active_session())
     else:
@@ -243,6 +246,7 @@ def notes_list():
 def add_note():
     log.debug('funkcja add_note?')
     if request.method == POST:
+        user = session['user']
         log.debug(request.form)
         title = request.form[TITLE_FIELD_ID]
         log.debug(f'dodawanie notatki: {title}')
@@ -252,13 +256,12 @@ def add_note():
         public = request.form[PUBLIC_FIELD_ID]
         who_can_read = request.form[WHO_CAN_READ_FIELD_ID]
 
-        newNote = Note()
-
-        if encrypt:
+        if encrypt and public:
             encrypt_passwd = request.form[ENCRYPT_PASSWD_FIELD_ID]
+            newNote = Note(title=title, author=user, date=datetime.utcnow(), )
 
         if who_can_read:
-
+            newNote = Note(title=title, author=user, date=datetime.utcnow(), )
 
         
 

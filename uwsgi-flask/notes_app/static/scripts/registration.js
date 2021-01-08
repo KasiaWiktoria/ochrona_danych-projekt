@@ -19,9 +19,9 @@ document.addEventListener('DOMContentLoaded', function (event) {
         var canSend = (AVAILABLE_LOGIN && validateLogin() == "" && validatePasswd() == "" && arePasswdsTheSame());
 
         let email = document.getElementById(EMAIL_FIELD_ID)
+        let login = document.getElementById(LOGIN_FIELD_ID)
         let password = document.getElementById(PASSWD_FIELD_ID);
         let repeat_password = document.getElementById(REPEAT_PASSWD_FIELD_ID)
-
 
         let fields = [email, login, password, repeat_password];
         if(!isAnyFieldBlank(fields)) {
