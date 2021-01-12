@@ -44,6 +44,7 @@ class Note(db.Model):
     date = db.Column(db.DateTime, default=datetime.utcnow())
     note_content = db.Column(db.Text)
     public = db.Column(db.Boolean, default=False)
+    encrypted = db.Column(db.Boolean, default=False)
     _who_can_read = db.Column(db.String(250), nullable=True)
     @property
     def who_can_read(self):
@@ -51,8 +52,7 @@ class Note(db.Model):
     @who_can_read.setter
     def who_can_read(self, value):
         self._who_can_read += ';%s' % value
-    encrypted = db.Column(db.Boolean, default=False)
-    hashed_passwd = db.Column(db.String(200))
+    
 
 
 class User(db.Model):
@@ -234,7 +234,7 @@ def add_user(email, login, password):
 def notes_list():
     if active_session():
         user = session['user']
-        notes = Notes.query.filter(author==user).all()
+        notes = Note.query.filter(Note.author==user).all()
         for note in notes:
             note.date = note.date.strftime('%d %B %Y - %H:%M:%S')
         log.debug(notes)
@@ -251,22 +251,40 @@ def add_note():
         title = request.form[TITLE_FIELD_ID]
         log.debug(f'dodawanie notatki: {title}')
 
-        note_content = request.form[NOTE_CONTENT_FIELD_ID]
-        encrypt = request.form[ENCRYPT_FIELD_ID]
-        public = request.form[PUBLIC_FIELD_ID]
-        who_can_read = request.form[WHO_CAN_READ_FIELD_ID]
+        try:
+            note_content = request.form[NOTE_CONTENT_FIELD_ID]
+            encrypt = request.form[ENCRYPT_FIELD_ID]
+            public = request.form[PUBLIC_FIELD_ID]
+            who_can_read = request.form[WHO_CAN_READ_FIELD_ID]
+        except Exception as e:
+            log.debug(f'błąd: {e}')
+            return make_response(jsonify({"msg": str(e), "status":400}), 400)
 
-        if encrypt and public:
+        log.debug(f'encrypt: {encrypt}, public: {public}, who_can_read: {who_can_read} ')
+        newNote = Note(title=title, author=user, date=datetime.utcnow())
+
+        log.debug('pobranie zmiennych z formularza')
+
+        if encrypt:
+            log.debug('zaszyfrowana notatka')
             encrypt_passwd = request.form[ENCRYPT_PASSWD_FIELD_ID]
-            newNote = Note(title=title, author=user, date=datetime.utcnow(), )
+            newNote.encrypted = True
+            #newNote.note_content = encrypt(note_content)
+        else:
+            log.debug('niezaszyfrowana notatka')
+            newNote.note_content = note_content
 
-        if who_can_read:
-            newNote = Note(title=title, author=user, date=datetime.utcnow(), )
-
-        
+        if public:
+            log.debug('publiczna notatka')
+            newNote.public = True
+        elif who_can_read:
+            log.debug('lista osób które mogą czytać')
+            newNote.who_can_read = who_can_read
 
         try:
-            log.debug(title)
+            log.debug('dodanie notatki do bazy danych')
+            db.session.add(newNote)
+            db.session.commit()
         except Exception as e:
             log.debug(e)
             return make_response(jsonify({"msg": str(e), "status":400}), 400)
@@ -318,7 +336,6 @@ def uploaded_file(filename):
 
 def active_session():
     try:
-        log.debug(f'ciasteczko sesji: {request.cookies.get(SESSION_ID)}')
         hash_ = request.cookies.get(SESSION_ID)
         user = session['user']
         log.debug(f'user: {user}')

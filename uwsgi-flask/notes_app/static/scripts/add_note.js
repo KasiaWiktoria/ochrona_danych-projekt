@@ -172,22 +172,29 @@ document.addEventListener('DOMContentLoaded', function (event) {
 
 function prepareForm(){
     let titleField = document.getElementById(TITLE_FIELD_ID)
-    let note_contentField = document.getElementById(NOTE_CONTENT_FIELD_ID)
+    let noteContentField = document.getElementById(NOTE_CONTENT_FIELD_ID)
     let encryptField = document.getElementById(ENCRYPT_FIELD_ID)
     let publicField = document.getElementById(PUBLIC_FIELD_ID)
+
+    console.log('tytuł: ', titleField.value)
+    console.log('treść: ', noteContentField.value)
+    console.log('zaszyfrować?: ', encryptField.checked)
+    console.log('publiczna: ', publicField.checked)
 
     let form = new FormData()
 
     console.log(titleField)
     console.log(titleField.value)
     form.append(TITLE_FIELD_ID, titleField.value)
-    form.append(NOTE_CONTENT_FIELD_ID, note_contentField.value)
+    form.append(NOTE_CONTENT_FIELD_ID, noteContentField.value)
     if (encryptField.checked){
+        console.log('zaszyfrować.')
         form.append(ENCRYPT_FIELD_ID, true)
         let encryptPasswdField = document.getElementById(ENCRYPT_PASSWD_FIELD_ID)
         form.append(ENCRYPT_PASSWD_FIELD_ID, encryptPasswdField.value)
     } else{
         form.append(ENCRYPT_FIELD_ID, false)
+        form.append(ENCRYPT_PASSWD_FIELD_ID, null)
     }
     if (publicField.checked){
         form.append(PUBLIC_FIELD_ID, true)
@@ -195,6 +202,8 @@ function prepareForm(){
         form.append(PUBLIC_FIELD_ID, false)
         if (users_who_can_read.length > 0) {
             form.append(WHO_CAN_READ_FIELD_ID, users_who_can_read)
+        } else {
+            form.append(WHO_CAN_READ_FIELD_ID, null)
         }
     }
     return form
