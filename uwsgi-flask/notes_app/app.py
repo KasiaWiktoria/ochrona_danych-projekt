@@ -263,7 +263,7 @@ def notes_list():
 
 def shared_notes(user):
     shared_notes = []
-    notes = Note.query.filter((Note.author!=user) | (Note.public!=True)).all()
+    notes = Note.query.filter(Note.author!=user, Note.public!=True).all()
     for note in notes:
         log.debug(f'note_content: {note.note_content} ')
         user_db = User.query.filter_by(login=user).first()
