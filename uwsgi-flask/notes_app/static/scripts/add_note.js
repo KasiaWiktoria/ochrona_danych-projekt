@@ -183,23 +183,24 @@ function prepareForm(){
 
     let form = new FormData()
 
-    console.log(titleField)
+    console.log('value: ', noteContentField.value)
+    console.log('textContent: ', noteContentField.textContent)
     console.log(titleField.value)
     form.append(TITLE_FIELD_ID, titleField.value)
     form.append(NOTE_CONTENT_FIELD_ID, noteContentField.value)
     if (encryptField.checked){
-        console.log('zaszyfrować.')
-        form.append(ENCRYPT_FIELD_ID, true)
+        console.log('zaszyfrowana notatka')
+        form.append(ENCRYPT_FIELD_ID, encryptField.checked)
         let encryptPasswdField = document.getElementById(ENCRYPT_PASSWD_FIELD_ID)
         form.append(ENCRYPT_PASSWD_FIELD_ID, encryptPasswdField.value)
     } else{
-        form.append(ENCRYPT_FIELD_ID, false)
+        form.append(ENCRYPT_FIELD_ID, encryptField.checked)
         form.append(ENCRYPT_PASSWD_FIELD_ID, null)
     }
     if (publicField.checked){
-        form.append(PUBLIC_FIELD_ID, true)
+        form.append(PUBLIC_FIELD_ID, publicField.checked)
     } else{
-        form.append(PUBLIC_FIELD_ID, false)
+        form.append(PUBLIC_FIELD_ID, publicField.checked)
         if (users_who_can_read.length > 0) {
             form.append(WHO_CAN_READ_FIELD_ID, users_who_can_read)
         } else {

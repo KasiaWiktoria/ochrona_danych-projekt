@@ -1,24 +1,32 @@
 import {addCorrectMessage, addfailureMessage} from './form_functions.js';
-import {GET, POST, URL, HTTP_STATUS, noteURL} from './const.js'
+import {GET, POST, URL, HTTP_STATUS} from './const.js'
 
-let page_url = URL + 'notes_list'
+let page_url = URL + 'get_notes_list'
 document.addEventListener('DOMContentLoaded', function (event) {
     loadNotes(page_url);
 
 })
 
 function loadNotes(page_url){
+    console.log('funkcja loadNotes')
     clearTable()
 
     fetchPacks(page_url).then(response => {
-            return response.json()
+            if (response.status != HTTP_STATUS.OK){
+                let id = "title";
+                addfailureMessage(id,'Serwer zwrócił błąd')
+            } else {
+                return response.json()
+            }
         }).then(response => {
+            console.log('response: ', response)
+            console.log('załadowanie listy notatek')
             let h1 = document.getElementById('title')
 
             let n_of_notes = response.notes.length
             if (n_of_notes > 0){
+                console.log('lista nie jest pusta')
                 let notes = response.notes
-                //let images = response.notes_images
     
                 let notes_list = document.createElement('div')
                 notes_list.id = 'notes-list'
@@ -28,6 +36,7 @@ function loadNotes(page_url){
                 )
                 h1.insertAdjacentElement('afterend', notes_list)
             } else {
+                console.log('brak notatek')
                 let empty_warning = document.createElement('div')
                 empty_warning.className = "max-width-elem empty"
                 empty_warning.id = 'empty-list-warning'
@@ -37,12 +46,13 @@ function loadNotes(page_url){
         }).catch(err => {
             console.log("Caught error: " + err);
             let id = "title";
+            let h1 = document.getElementById('title')
             addfailureMessage(id,"Pobieranie notatek nie powiodło się. ")
             let empty_warning = document.createElement('div')
-                empty_warning.className = "max-width-elem empty"
-                empty_warning.id = 'empty-list-warning'
-                empty_warning.textContent = 'Pobieranie notatek nie powiodło się.'
-                h1.insertAdjacentElement('afterend', empty_warning)
+            empty_warning.className = "max-width-elem empty"
+            empty_warning.id = 'empty-list-warning'
+            empty_warning.textContent = 'Pobieranie notatek nie powiodło się.'
+            h1.insertAdjacentElement('afterend', empty_warning)
         });
 }
 

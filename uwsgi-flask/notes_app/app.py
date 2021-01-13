@@ -230,14 +230,31 @@ def add_user(email, login, password):
         log.debug(e)
         return "Rejected!"
 
-@app.route("/notes_list")
-def notes_list():
+@app.route("/get_notes_list")
+def get_notes_list():
     if active_session():
+        log.debug('funkcja get_notes_list')
         user = session['user']
+        log.debug(f'funkcja get_notes_list: użytkownik={user}')
         notes = Note.query.filter(Note.author==user).all()
         for note in notes:
             note.date = note.date.strftime('%d %B %Y - %H:%M:%S')
         log.debug(notes)
+        return {'notes': notes}, 200
+    else:
+        return {'msg': 'Pobieranie notatek nie powiodło się.'}, 400
+
+@app.route("/notes_list")
+def notes_list():
+    if active_session():
+        user = session['user']
+        log.debug(f'funkcja get_notes_list: użytkownik={user}')
+        notes = Note.query.filter(Note.author==user).all()
+        for note in notes:
+            note.date = note.date.strftime('%d %B %Y - %H:%M:%S')
+        log.debug(notes)
+        for note in notes:
+            log.debug(f'note_content: {note.note_content} ')
         return render_template("notes_list.html", notes=notes, loggedin=active_session())
     else:
         abort(401)
@@ -264,20 +281,24 @@ def add_note():
         newNote = Note(title=title, author=user, date=datetime.utcnow())
 
         log.debug('pobranie zmiennych z formularza')
+        log.debug(f'note content: {note_content} ')
+        if encrypt == 'false':
+            log.debug(f'false jest stringiem: -- {encrypt}')
 
-        if encrypt:
+        if encrypt == 'true':
             log.debug('zaszyfrowana notatka')
             encrypt_passwd = request.form[ENCRYPT_PASSWD_FIELD_ID]
             newNote.encrypted = True
+            newNote.note_content = 'zaszyfrowana treść: ' + note_content
             #newNote.note_content = encrypt(note_content)
         else:
             log.debug('niezaszyfrowana notatka')
             newNote.note_content = note_content
 
-        if public:
+        if public == 'true':
             log.debug('publiczna notatka')
             newNote.public = True
-        elif who_can_read:
+        elif who_can_read != 'null':
             log.debug('lista osób które mogą czytać')
             newNote.who_can_read = who_can_read
 

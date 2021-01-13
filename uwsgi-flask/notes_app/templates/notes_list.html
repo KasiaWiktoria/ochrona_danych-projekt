@@ -65,13 +65,15 @@
                     <p class="text">Jakaś treść notatki. Jakaś treść notatki. Jakaś treść notatki. Jakaś treść notatki. Jakaś treść notatki. Jakaś treść notatki. Jakaś treść notatki. </p>
                 </div>
 
-                <div class="note_field">
-                    <title>___Tytuł notatki 2___</title>
-                    <div class="author">Weronika</div>
-                    <div class="date">12-10-2013</div>
-                    <title></title>
-                    <p class="text">Jakaś treść notatki. Jakaś treść notatki. Jakaś treść notatki. Jakaś treść notatki. Jakaś treść notatki. Jakaś treść notatki. Jakaś treść notatki. </p>
-                </div>
+                {% for note in notes %}
+                    <div class="note_field">
+                        <div class="title">{{note.title}}</div>
+                        <div class="author">{{note.author}}</div>
+                        <div class="date">{{note.date}}</div>
+                        <p class="text">{{note.note_content}}</p>
+                    </div>
+                {% endfor %}
+
             </div>
             
         </section>
