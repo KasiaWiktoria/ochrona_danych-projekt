@@ -1,7 +1,10 @@
 import {GET, POST, URL, HTTP_STATUS, EMAIL_FIELD_ID, LOGIN_FIELD_ID, PASSWD_FIELD_ID, REPEAT_PASSWD_FIELD_ID} from './const.js'
 import {showWarningMessage, removeWarningMessage, prepareWarningElem, appendAfterElem} from './warning_functions.js';
 
-
+const csrfToken = document.getElementById('csrf_token').value
+const headers = new Headers({
+    "X-CSRF-Token": csrfToken
+});
 
 export function submitForm(url, form, name, successMessage, failureMessage) {
     let registerUrl = url + name;
@@ -13,7 +16,8 @@ export function submitForm(url, form, name, successMessage, failureMessage) {
         method: POST,
         mode: 'cors',
         body: new FormData(form),
-        redirect: "follow"
+        redirect: "follow",
+        headers
     };
 
     fetch(registerUrl, registerParams)
@@ -37,12 +41,12 @@ function displayInConsoleCorrectResponse(correctResponse, successMessage, failur
 
     if (correctResponse.registration_status == "OK") {
         let id = "button-submit-form";
-        addCorrectMessage(id,successMessage);
+        addCorrectMessage(id,correctResponse.message);
         clearFields()
     } else {
         console.log("Errors: " + correctResponse.registration_status);
         let id = "button-submit-form";
-        addfailureMessage(id, failureMessage + correctResponse)
+        addfailureMessage(id, correctResponse.message)
     }
 }
 
@@ -60,15 +64,7 @@ function clearFields(){
 }
 
 function getResponseData(response) {
-    let status = response.status;
-
-    if (status === HTTP_STATUS.OK) {
-        console.log("Status =" + status);
-        return response.json()
-    } else {
-        console.error("Response status code: " + response.status);
-        throw "Unexpected response status: " + response.status;
-    }
+    return response.json()
 }
     
 export function prepareOtherEventOnChange(FIELD_ID, updateMessageFunction) {

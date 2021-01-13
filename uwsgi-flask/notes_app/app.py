@@ -194,14 +194,17 @@ def registration():
         password = request.form[PASSWD_FIELD_ID]
         log.debug(f'email: {email}, login: {login}')
         if not validateEmail(email):
-            return { "registration_status": 400 , 'msg': 'Niepoprawna forma adresu email.'}, 400
-        if login.isalpha():
-            return { "registration_status": 400 , 'msg': 'Login może składać się tylko z liter.'}, 400
+            log.debug('email nie przeszedł walidacji')
+            return { "registration_status": 400 , 'message': 'Niepoprawna forma adresu email.'}, 400
+        if not login.isalpha():
+            log.debug('login nie przeszedł walidacji')
+            return { "registration_status": 400 , 'message': 'Login może składać się tylko z liter.'}, 400
         try:
             registration_status = add_user(email, login, password)
-            return { "registration_status": registration_status }, 200
+            return { "registration_status": registration_status, 'message': 'Zarejestrowano pomyślnie'}, 200
         except:
-            return { "registration_status": 400 , 'msg': 'Nie udało się zapisać danych do bazy.'}, 400
+            log.debug('Nie udało się zapisać danych do bazy.')
+            return { "registration_status": 400 , 'message': 'Nie udało się zapisać danych do bazy.'}, 400
     else:
         if not active_session():
             return render_template("registration.html", loggedin=active_session())
@@ -210,7 +213,7 @@ def registration():
 
 
 def validateEmail(email):
-    regex = "^[\\w-\\.]+@([\\w-]+\\.)+[\\w-]{2,4}$"
+    regex = re.compile(r"^[-\w\.]+@([\w-]+\.)+[\w-]{2,4}$")
     if(re.search(regex,email)):  
         return True  
     else:  
