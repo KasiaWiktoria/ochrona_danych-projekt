@@ -48,9 +48,13 @@ class Note(db.Model):
     _who_can_read = db.Column(db.String(250), nullable=True)
     @property
     def who_can_read(self):
-        return [srt(x) for x in self._who_can_read.split(';')]
+        if self._who_can_read is None:
+            return []
+        else:
+            return [str(x) for x in self._who_can_read.split(';')]
     @who_can_read.setter
     def who_can_read(self, value):
+        self._who_can_read = ''
         self._who_can_read += ';%s' % value
     
 
@@ -235,7 +239,6 @@ def get_notes_list():
     if active_session():
         log.debug('funkcja get_notes_list')
         user = session['user']
-        log.debug(f'funkcja get_notes_list: użytkownik={user}')
         notes = Note.query.filter(Note.author==user).all()
         for note in notes:
             note.date = note.date.strftime('%d %B %Y - %H:%M:%S')
@@ -248,16 +251,28 @@ def get_notes_list():
 def notes_list():
     if active_session():
         user = session['user']
-        log.debug(f'funkcja get_notes_list: użytkownik={user}')
-        notes = Note.query.filter(Note.author==user).all()
+        notes = Note.query.filter((Note.author==user) | (Note.public==True)).all()
+        notes = notes + shared_notes(user)
         for note in notes:
-            note.date = note.date.strftime('%d %B %Y - %H:%M:%S')
+            if type(note.date) is not str:
+                note.date = note.date.strftime('%d %B %Y - %H:%M:%S')
         log.debug(notes)
-        for note in notes:
-            log.debug(f'note_content: {note.note_content} ')
         return render_template("notes_list.html", notes=notes, loggedin=active_session())
     else:
         abort(401)
+
+def shared_notes(user):
+    shared_notes = []
+    notes = Note.query.filter((Note.author!=user) | (Note.public!=True)).all()
+    for note in notes:
+        log.debug(f'note_content: {note.note_content} ')
+        user_db = User.query.filter_by(login=user).first()
+        log.debug(f'kto może przeczytać tą notatkę: {note.who_can_read}')
+        log.debug(f'email użytkownika: {user_db.email}')
+        log.debug(f'user in Note.who_can_read: {user_db.email in note.who_can_read}')
+        if user_db.email in note.who_can_read:
+            shared_notes.append(note)
+    return shared_notes
 
 @app.route("/add_note", methods=[GET,POST])
 def add_note():
@@ -300,7 +315,16 @@ def add_note():
             newNote.public = True
         elif who_can_read != 'null':
             log.debug('lista osób które mogą czytać')
-            newNote.who_can_read = who_can_read
+            log.debug(f'id nowej notatki: {newNote.id} ')
+            #newSharedNote = sharedNote(user,newNote.id)
+            #db.session.add(newSharedNote)
+            #db.session.commit()
+            log.debug(f'kto może czytać: {who_can_read}')
+            who_can_read = who_can_read.split(',')
+            #newNote._who_can_read = ''
+            for u in who_can_read:
+                log.debug(f'użytkownik: {u}')
+                newNote.who_can_read = u
 
         try:
             log.debug('dodanie notatki do bazy danych')
