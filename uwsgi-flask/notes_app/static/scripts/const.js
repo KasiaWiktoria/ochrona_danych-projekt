@@ -15,7 +15,6 @@ export const PASSWD_FIELD_ID = "password";
 export const REPEAT_PASSWD_FIELD_ID = "second_password";
 
 export const DATE_FIELD_ID = "date";
-export const TITLE_FIELD_ID = "note_title";
 
 export const NOTE_CONTENT_FIELD_ID = "note_content";
 export const ENCRYPT_FIELD_ID = "encrypt"

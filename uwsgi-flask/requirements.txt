@@ -3,3 +3,8 @@ uwsgi
 Werkzeug==0.16.1
 flask-sqlalchemy
 psycopg2
+passlib
+flask_wtf
+pycrypto
+pycryptodome
+pycryptodomex

@@ -1,7 +1,7 @@
 import {addCorrectMessage, addfailureMessage, submitForm, updateCorrectnessMessage, prepareOtherEventOnChange} from './form_functions.js';
 import {showWarningMessage, removeWarningMessage, prepareWarningElem, appendAfterElem} from './warning_functions.js';
 import {isAnyFieldBlank, isLoginAvailable, validateLogin, validatePasswd, arePasswdsTheSame} from './validation_functions.js';
-import {GET, POST, URL, HTTP_STATUS, TITLE_FIELD_ID, NOTE_CONTENT_FIELD_ID, ENCRYPT_FIELD_ID, PUBLIC_FIELD_ID, ENCRYPT_PASSWD_FIELD_ID, WHO_CAN_READ_FIELD_ID} from './const.js'
+import {GET, POST, URL, HTTP_STATUS, NOTE_CONTENT_FIELD_ID, ENCRYPT_FIELD_ID, PUBLIC_FIELD_ID, ENCRYPT_PASSWD_FIELD_ID, WHO_CAN_READ_FIELD_ID} from './const.js'
 import {htmlEncode, jsEscape} from './additional_functions.js'
 
 let users_who_can_read = []
@@ -11,7 +11,6 @@ let chbox = document.getElementById('public')
 chbox.addEventListener('change', function (event){
     event.preventDefault()
 
-    let title = document.getElementById(TITLE_FIELD_ID);
     let note_content = document.getElementById(NOTE_CONTENT_FIELD_ID);
 
     console.log(note_content.value)
@@ -155,12 +154,11 @@ document.addEventListener('DOMContentLoaded', function (event) {
     newNoteForm.addEventListener("submit", function (event) {
         event.preventDefault();
 
-        let title = document.getElementById(TITLE_FIELD_ID);
         let note_content = document.getElementById(NOTE_CONTENT_FIELD_ID);
 
         console.log(note_content.textContent)
 
-        let fields = [title, note_content];
+        let fields = [note_content];
         if(!isAnyFieldBlank(fields)) {
             submitNoteForm(prepareForm(), "add_note");
         } else {
@@ -171,12 +169,10 @@ document.addEventListener('DOMContentLoaded', function (event) {
 });
 
 function prepareForm(){
-    let titleField = document.getElementById(TITLE_FIELD_ID)
     let noteContentField = document.getElementById(NOTE_CONTENT_FIELD_ID)
     let encryptField = document.getElementById(ENCRYPT_FIELD_ID)
     let publicField = document.getElementById(PUBLIC_FIELD_ID)
 
-    console.log('tytuł: ', titleField.value)
     console.log('treść: ', noteContentField.value)
     console.log('zaszyfrować?: ', encryptField.checked)
     console.log('publiczna: ', publicField.checked)
@@ -185,8 +181,6 @@ function prepareForm(){
 
     console.log('value: ', noteContentField.value)
     console.log('textContent: ', noteContentField.textContent)
-    console.log(titleField.value)
-    form.append(TITLE_FIELD_ID, titleField.value)
     form.append(NOTE_CONTENT_FIELD_ID, noteContentField.value)
     if (encryptField.checked){
         console.log('zaszyfrowana notatka')

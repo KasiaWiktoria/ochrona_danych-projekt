@@ -53,6 +53,8 @@
 
         <form id="registration-form" class="registration-form">
 
+            <input id="csrf_token" type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+
             <div class="column">
                 <div class="form-col">
 

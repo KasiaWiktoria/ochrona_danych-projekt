@@ -50,8 +50,8 @@
             <h1 id="title">Dodaj notatkę</h1>
 
             <form class="add-note-form" id="add-note-form">
-                <label for="note_title">tytuł: </label>
-                <input type="text" id="note_title">
+            <input id="csrf_token" type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+
                 <label for="note">treść notatki: </label>
                 <textarea name="note" id="note_content" cols="30" rows="10"></textarea>
 

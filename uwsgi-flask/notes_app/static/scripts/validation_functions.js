@@ -46,9 +46,7 @@ export function validateEmail(EMAIL_FIELD_ID){
         return "Email nie może zawierać polskich znaków.";
     } else if (!(RegExp("^[\\w-\\.]+@([\\w-]+\\.)+[\\w-]{2,4}$").test(emailInput))){
         return "Niepoprawna forma adresu email.";
-    } else if(emailInput.length < 4 ){
-        return "Login musi mieć powyżej 4 znaków."
-    }else{
+    } else{
         return "";
     }
 }
@@ -57,7 +55,7 @@ export function validateFile(IMAGE_FIELD_ID) {
     let filePath = document.getElementById(IMAGE_FIELD_ID).value;
           
             var allowedExtensions =  
-                    /(\.jpg|\.jpeg|\.png)$/i; 
+                    /(\.txt|\.docx|\.doc|\.pdf)$/i; 
               
             if (allowedExtensions.exec(filePath) !== null) { 
                 return "";
@@ -65,7 +63,7 @@ export function validateFile(IMAGE_FIELD_ID) {
             else  
             { 
                 document.getElementById(IMAGE_FIELD_ID).value = ''
-                return 'Nieprawidłowy format pliku. Dozwolone rozszerzenia: .jpg, .jpeg, .png.'; 
+                return 'Nieprawidłowy format pliku. Dozwolone rozszerzenia: .txt, .docx, .doc, .pdf.'; 
             } 
 }
 

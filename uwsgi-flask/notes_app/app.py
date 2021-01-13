@@ -2,44 +2,49 @@ from flask import Flask, flash, render_template, make_response, session, url_for
 import logging
 from sqlalchemy.dialects.postgresql import JSON
 from werkzeug.utils import secure_filename
-import hashlib
+from passlib.hash import bcrypt 
+from base64 import b64encode, b64decode
+from Crypto.Cipher import AES
+from Crypto.Util.Padding import pad, unpad
+from Crypto.Random import get_random_bytes
+from Cryptodome.Protocol.KDF import PBKDF2
+from flask_wtf.csrf import CSRFProtect
 from uuid import uuid4
 from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime, timedelta
 import os
+import re
 
 from .const import *
-#from note import Note
 
 
 app = Flask(__name__, static_url_path="")
 
-app.config ['SQLALCHEMY_DATABASE_URI'] =  os.getenv("DATABASE_URL", "sqlite://")
+app.config ['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///db.sqlite3' #os.getenv("DATABASE_URL", "sqlite://")
 app.config ['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+app.config["PERMANENT_SESSION_LIFETIME"] = timedelta(minutes=5)
 app.config ['UPLOAD_FOLDER'] = './user-files'
 app.config['SECRET_KEY'] = SECRET_KEY
-SALT = os.getenv('SALT')
 
-log = app.logger #logging.create_logger(app)
+log = app.logger
 db = SQLAlchemy(app)
+csrf = CSRFProtect(app)
+
 
 @app.before_first_request
 def before_first_request():
     logging.basicConfig(level=logging.DEBUG)
-'''
-users = db.Table('users',
-    db.Column('id', db.Integer, primary_key=True),
-    db.Column('title', db.String(200)),
-    db.Column('author', db.String(50)),
-    db.Column('date', db.DateTime, default=datetime.utcnow()),
-    db.Column('text', db.String(500))
-)
-'''
+
+@app.after_request
+def add_security_headers(resp):
+    resp.headers['server'] = ''
+    resp.headers['Content-Security-Policy']= ' default-src \'self\';font-src fonts.gstatic.com;style-src \'self\' fonts.googleapis.com \'unsafe-inline\''
+    return resp
+
 class Note(db.Model):
     __tablename__ = "notes"
 
     id = db.Column(db.Integer, primary_key=True)
-    title = db.Column(db.String(200))
     author = db.Column(db.String(70))
     date = db.Column(db.DateTime, default=datetime.utcnow())
     note_content = db.Column(db.Text)
@@ -57,8 +62,6 @@ class Note(db.Model):
         self._who_can_read = ''
         self._who_can_read += ';%s' % value
     
-
-
 class User(db.Model):
     __tablename__ = "users"
 
@@ -88,16 +91,15 @@ class LoginAttempt(db.Model):
     ip_address = db.Column(db.String(100), nullable=False)
     login_attempt_date = db.Column(db.DateTime)
     success = db.Column(db.Boolean, default=False)
-    #failed_login_attempts = db.Column(db.Integer, nullable=False)
-
 
     def __repr__(self):
         return f'<Loggin Attempt for {self.ip_address}: {self.login_attempts} success: {self.success}>' 
-
 db.create_all()
+
 
 @app.route("/")
 def index():
+    log.debug(f'name: {__name__}')
     ip_address = request.remote_addr
     log.debug(f'IP adress: {ip_address}')
     minute_ago = datetime.utcnow() - timedelta(seconds=60)
@@ -127,7 +129,8 @@ def login():
 
         if user is not None:
             log.debug("Użytkownik " + username + " jest w bazie danych.")
-            if check_passwd(username,password):
+            hash_from_db = User.query.filter_by(login=username).first().passwd_hash
+            if bcrypt.using(rounds=15).verify(password, hash_from_db):
                 log.debug("Hasło jest poprawne.")
                 hash_ = uuid4().hex 
                 try:
@@ -171,18 +174,6 @@ def login():
         else:
             return make_response(render_template("errors/already-logged-in.html", loggedin=active_session()))
 
-def check_passwd(username, password):
-    log.debug('sprawdzenie hasła')
-    password = (password+SALT).encode("utf-8")
-    passwd_hash = hashlib.sha256(password).hexdigest()
-    hash_from_db = User.query.filter_by(login=username).first().passwd_hash
-    log.debug('pobrano hasło z bazy danych')
-    p_hash = passwd_hash
-    log.debug(f'hash dla podanego hasła: {p_hash}')
-    log.debug(f'hash dla hasła z bazy danych: {hash_from_db}')
-    log.debug(f'Wynik porównania: {p_hash == hash_from_db}')
-    return p_hash == hash_from_db
-
 @app.route("/logout")
 def logout():
     if active_session():
@@ -202,23 +193,34 @@ def registration():
         login = request.form[LOGIN_FIELD_ID]
         password = request.form[PASSWD_FIELD_ID]
         log.debug(f'email: {email}, login: {login}')
-
+        if not validateEmail(email):
+            return { "registration_status": 400 , 'msg': 'Niepoprawna forma adresu email.'}, 400
+        if login.isalpha():
+            return { "registration_status": 400 , 'msg': 'Login może składać się tylko z liter.'}, 400
         try:
             registration_status = add_user(email, login, password)
             return { "registration_status": registration_status }, 200
         except:
-            return { "registration_status": 400 }, 400
+            return { "registration_status": 400 , 'msg': 'Nie udało się zapisać danych do bazy.'}, 400
     else:
         if not active_session():
             return render_template("registration.html", loggedin=active_session())
         else:
             abort(401)
 
+
+def validateEmail(email):
+    regex = "^[\\w-\\.]+@([\\w-]+\\.)+[\\w-]{2,4}$"
+    if(re.search(regex,email)):  
+        return True  
+    else:  
+        return False
+            
+
 def add_user(email, login, password):
     log.debug("Login: " + login )
     try:
-        passwd_to_hash = (password+SALT).encode("utf-8")
-        hashed_password = hashlib.sha256(passwd_to_hash).hexdigest()
+        hashed_password = bcrypt.using(rounds=15).hash(password)
         log.debug("ok")
         new_user = User(email=email, login=login, passwd_hash=hashed_password)
         log.debug("dodawanie do bazy danych")
@@ -280,8 +282,6 @@ def add_note():
     if request.method == POST:
         user = session['user']
         log.debug(request.form)
-        title = request.form[TITLE_FIELD_ID]
-        log.debug(f'dodawanie notatki: {title}')
 
         try:
             note_content = request.form[NOTE_CONTENT_FIELD_ID]
@@ -293,7 +293,7 @@ def add_note():
             return make_response(jsonify({"msg": str(e), "status":400}), 400)
 
         log.debug(f'encrypt: {encrypt}, public: {public}, who_can_read: {who_can_read} ')
-        newNote = Note(title=title, author=user, date=datetime.utcnow())
+        newNote = Note(author=user, date=datetime.utcnow())
 
         log.debug('pobranie zmiennych z formularza')
         log.debug(f'note content: {note_content} ')
