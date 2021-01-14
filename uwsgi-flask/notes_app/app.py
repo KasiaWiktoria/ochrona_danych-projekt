@@ -4,9 +4,9 @@ from sqlalchemy.dialects.postgresql import JSON
 from werkzeug.utils import secure_filename
 from passlib.hash import bcrypt 
 from base64 import b64encode, b64decode
-from Crypto.Cipher import AES
+from Cryptodome.Cipher import AES
 from Crypto.Util.Padding import pad, unpad
-from Crypto.Random import get_random_bytes
+from Cryptodome.Random import get_random_bytes
 from Cryptodome.Protocol.KDF import PBKDF2
 from flask_wtf.csrf import CSRFProtect
 from uuid import uuid4
@@ -309,7 +309,7 @@ def add_note():
             log.debug('zaszyfrowana notatka')
             encrypt_passwd = request.form[ENCRYPT_PASSWD_FIELD_ID]
             newNote.encrypted = True
-            newNote.note_content = 'zaszyfrowana treść: ' + note_content
+            #newNote.note_content = 'zaszyfrowana treść: ' + note_content
             newNote.note_content, newNote.salt, newNote.iv = encrypt_note_content(note_content,encrypt_passwd)
         else:
             log.debug('niezaszyfrowana notatka')
@@ -349,6 +349,9 @@ def encrypt_note_content(note_content, password):
     salt = get_random_bytes(16)
     key = PBKDF2(password.encode('utf-8'),salt)
     to_encrypt = note_content.encode('utf-8')
+
+    log.debug(f'key: {key}')
+    log.debug(f'key: {len(key)}')
 
     cipher = AES.new(key, AES.MODE_CBC)
     log.debug(f'długość iv: {len(cipher.iv)}')
