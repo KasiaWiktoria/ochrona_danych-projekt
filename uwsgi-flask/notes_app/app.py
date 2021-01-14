@@ -353,6 +353,7 @@ def add_note():
             db.session.commit()
         except Exception as e:
             log.debug(e)
+            log.debug('dodanie notatki do bazy danych nie powiodło się')
             return make_response(jsonify({"msg": str(e), "status":400}), 400)
 
 

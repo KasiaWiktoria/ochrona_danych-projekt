@@ -48,13 +48,6 @@
         <section class="text">
             
             <h1 id="title">Lista twoich notatek</h1>
-
-            <div class="notes_list">
-                <div class="note_field">
-                    <div class="author">Kasia S.</div>
-                    <div class="date">24-08-2016</div>
-                    <p class="text">Jakaś treść notatki. Jakaś treść notatki. Jakaś treść notatki. Jakaś treść notatki. Jakaś treść notatki. Jakaś treść notatki. Jakaś treść notatki. </p>
-                </div>
                 
                 {% for note in notes %}
                     <div class="note_field" id="{{note.id|string + '_note_field'}}">

@@ -203,15 +203,11 @@ function prepareForm(){
         form.append(ENCRYPT_FIELD_ID, encryptField.checked)
         form.append(ENCRYPT_PASSWD_FIELD_ID, null)
     }
-    if (publicField.checked){
-        form.append(PUBLIC_FIELD_ID, publicField.checked)
-    } else{
-        form.append(PUBLIC_FIELD_ID, publicField.checked)
-        if (users_who_can_read.length > 0) {
-            form.append(WHO_CAN_READ_FIELD_ID, users_who_can_read)
-        } else {
-            form.append(WHO_CAN_READ_FIELD_ID, null)
-        }
+    form.append(PUBLIC_FIELD_ID, publicField.checked)
+    if (users_who_can_read.length > 0) {
+        form.append(WHO_CAN_READ_FIELD_ID, users_who_can_read)
+    } else {
+        form.append(WHO_CAN_READ_FIELD_ID, null)
     }
     return form
 }

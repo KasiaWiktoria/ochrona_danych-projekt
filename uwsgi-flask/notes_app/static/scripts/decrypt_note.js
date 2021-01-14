@@ -90,7 +90,7 @@ function showNote(note, note_id){
     let note_field = document.getElementById(note_id+'_note_field')
     let text = document.createElement('p')
     text.className = 'text'
-    text.textContent = note
+    text.textContent = note //jsEscape(note)
     removeDecryptPasswdInput(note_field)
     note_field.appendChild(text)
 }
