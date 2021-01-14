@@ -1,5 +1,6 @@
 from flask import Flask, flash, render_template, make_response, session, url_for, redirect, request, abort, jsonify, send_from_directory#, logging
 import logging
+import json
 from sqlalchemy.dialects.postgresql import JSON
 from werkzeug.utils import secure_filename
 from passlib.hash import bcrypt 
@@ -16,7 +17,7 @@ import os
 import re
 
 from .const import *
-
+from sqlalchemy.ext.declarative import DeclarativeMeta
 
 app = Flask(__name__, static_url_path="")
 
@@ -40,6 +41,23 @@ def add_security_headers(resp):
     resp.headers['server'] = ''
     resp.headers['Content-Security-Policy']= ' default-src \'self\';font-src fonts.gstatic.com;style-src \'self\' fonts.googleapis.com \'unsafe-inline\''
     return resp
+
+
+class AlchemyEncoder(json.JSONEncoder):
+
+    def default(self, obj):
+        if isinstance(obj.__class__, DeclarativeMeta):
+            fields = {}
+            for field in [x for x in dir(obj) if not x.startswith('_') and x != 'metadata']:
+                data = obj.__getattribute__(field)
+                try:
+                    json.dumps(data) 
+                    fields[field] = data
+                except TypeError:
+                    fields[field] = None
+            return fields
+
+        return json.JSONEncoder.default(self, obj)
 
 class Note(db.Model):
     __tablename__ = "notes"
@@ -359,6 +377,26 @@ def encrypt_note_content(note_content, password):
     iv = b64encode(cipher.iv).decode('utf-8')
     encrypted_note = b64encode(encrypted_note_bytes).decode('utf-8')
     return encrypted_note, salt, iv
+
+@app.route("/decrypt_note", methods=[POST])
+def decode_note():
+    entered_passwd = request.form[DECRYPT_PASSWD_FIELD_ID]
+    note_id = request.form[NOTE_ID_FIELD_ID]
+
+    note = Note.query.filter_by(id=note_id).first()
+    iv = b64decode(note.iv)
+    encrypted_note = b64decode(note.note_content)
+
+    try:
+        key = PBKDF2(entered_passwd.encode('utf-8'), note.salt)
+        cipher = AES.new(key, AES.MODE_CBC, iv)
+        decrypted_note = unpad(cipher.decrypt(encrypted_note), AES.block_size).decode("utf-8") 
+        log.debug(f'odszyfrowana notatka: {decrypted_note} ')
+        return jsonify({'message': 'Poprawnie odszyfrowano notatkę.', 'decrypted_note_content': decrypted_note, 'status':200}), 200
+    except ValueError:
+        return jsonify({'message': 'Błędne hasło.'}), 400
+
+
 
 
 def allowed_file(filename):

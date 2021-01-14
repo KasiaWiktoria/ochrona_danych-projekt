@@ -5,8 +5,10 @@
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width", initial-scale=1.0">
         <link href="/styles/list.css" rel="stylesheet" type="text/css">
+        <link href="/styles/form_style.css" rel="stylesheet" type="text/css">
         <link href="/styles/main_style.css" rel="stylesheet" type="text/css">
         <link rel="shortcut icon" href="/images/favicon.ico"/>
+        <script type="module" src="/scripts/decrypt_note.js"></script>
     </head>
     <body>
         <header>
@@ -43,10 +45,6 @@
             {% endif %}
         </header>
 
-        <div class="max-width-elem">
-            <a id="logout_button" class="btn" href="/add_note" method="POST">Dodaj notatkę</a>
-        </div>
-
         <section class="text">
             
             <h1 id="title">Lista twoich notatek</h1>
@@ -57,19 +55,32 @@
                     <div class="date">24-08-2016</div>
                     <p class="text">Jakaś treść notatki. Jakaś treść notatki. Jakaś treść notatki. Jakaś treść notatki. Jakaś treść notatki. Jakaś treść notatki. Jakaś treść notatki. </p>
                 </div>
-
+                
                 {% for note in notes %}
-                {% if note.public %}
-                    <p>notatka publiczna</p>
-                    {% endif %}
-                    <div class="note_field">
+                    <div class="note_field" id="{{note.id|string + '_note_field'}}">
+                        {% if note.public %}
+                            <div class="max-width-elem">NOTATKA PUBLICZNA</div>
+                        {% endif %}
+                        {% if note.encrypted %}
+                            <div class="max-width-elem encrypted">NOTATKA ZASZYFROWANA</div>
+                        {% endif %}
                         <div class="author">{{note.author}}</div>
                         <div class="date">{{note.date}}</div>
-                        <p class="text">{{note.note_content}}</p>
+                        {% if note.encrypted %}
+                            <form id="decrypt-note-form">
+                                <input id="csrf_token" type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                                <input id="note_id" type="hidden" name="note_id" value="{{ note.id }}"/>
+                                <div class="form-row">
+                                    <label id='label_passwd' for="decrypt_passwd">Podaj hasło do odszyfrowania notatki: </label>
+                                    <input id="decrypt_passwd" type="password" name="decrypt_passwd">
+                                    <input class="btn small" id="button-submit-form" type="submit" value="Odszyfruj notatkę"/> 
+                                </div>
+                            </form>
+                        {% endif %}
+                        {% if not note.encrypted %}
+                            <p class="text">{{note.note_content}}</p>
+                        {% endif %}
                     </div>
-                    {% if note.encrypt %}
-                    <p>notatka zaszyfrowana</p>
-                    {% endif %}
                 {% endfor %}
 
             </div>

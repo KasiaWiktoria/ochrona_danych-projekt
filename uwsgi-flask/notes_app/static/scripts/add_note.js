@@ -250,7 +250,6 @@ function showMessages(response) {
     if (status === HTTP_STATUS.OK) {
         console.log("Dodano pomyślnie.");
         addCorrectMessage(id,response.msg)
-        //window.location.href = 'notes_list'
     } else if (status == HTTP_STATUS.BAD_REQUEST) {
         console.log("Niepoprawne żądanie.")
         addfailureMessage(id,response.msg)

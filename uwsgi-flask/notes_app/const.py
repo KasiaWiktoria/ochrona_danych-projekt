@@ -13,5 +13,7 @@ PASSWD_FIELD_ID = "password"
 NOTE_CONTENT_FIELD_ID = "note_content"
 ENCRYPT_FIELD_ID = "encrypt"
 ENCRYPT_PASSWD_FIELD_ID = "encrypt_passwd"
+DECRYPT_PASSWD_FIELD_ID = "decrypt_passwd"
 PUBLIC_FIELD_ID = "public"
 WHO_CAN_READ_FIELD_ID = "who_can_read"
+NOTE_ID_FIELD_ID ='note_id'

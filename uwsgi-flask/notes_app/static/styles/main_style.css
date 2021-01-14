@@ -177,6 +177,11 @@ nav ul li a:hover {
     margin-bottom: 10px;
 }
 
+.btn.small{
+    padding: 5px 15px;
+    font-size: 12px;
+}
+
 .btn:hover{
     background-color: var(--second-color);
     color: #fff;
