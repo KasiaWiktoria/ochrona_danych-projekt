@@ -24,13 +24,16 @@ app = Flask(__name__, static_url_path="")
 app.config ['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///db.sqlite3' #os.getenv("DATABASE_URL", "sqlite://")
 app.config ['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config["PERMANENT_SESSION_LIFETIME"] = timedelta(minutes=5)
-app.config ['UPLOAD_FOLDER'] = './user-files'
+app.config ['UPLOAD_FOLDER'] = './app/user-files'
 app.config['SECRET_KEY'] = SECRET_KEY
 
 log = app.logger
 db = SQLAlchemy(app)
 csrf = CSRFProtect(app)
 
+@app.before_request
+def func():
+  session.modified = True
 
 @app.before_first_request
 def before_first_request():
@@ -70,6 +73,7 @@ class Note(db.Model):
     encrypted = db.Column(db.Boolean, default=False)
     salt = db.Column(db.String(50), nullable=True)
     iv = db.Column(db.String(100), nullable=True)
+    file = db.Column(db.String(150), nullable=True)
     _who_can_read = db.Column(db.String(250), nullable=True)
     @property
     def who_can_read(self):
@@ -81,6 +85,13 @@ class Note(db.Model):
     def who_can_read(self, value):
         self._who_can_read = ''
         self._who_can_read += ';%s' % value
+
+class File(db.Model):
+    __tablename__ = "files"
+
+    id = db.Column(db.Integer, primary_key=True)
+    file_uuid = db.Column(db.String(150), unique=True, nullable=False)
+    file_name = db.Column(db.String(150), nullable=False)
     
 class User(db.Model):
     __tablename__ = "users"
@@ -119,7 +130,7 @@ db.create_all()
 
 @app.route("/")
 def index():
-    log.debug(f'name: {__name__}')
+    log.debug(f'ścieżka: {os.getcwd()}')
     ip_address = request.remote_addr
     log.debug(f'IP adress: {ip_address}')
     minute_ago = datetime.utcnow() - timedelta(seconds=60)
@@ -282,10 +293,15 @@ def notes_list():
         notes = notes + shared_notes(user)
         encrypted_notes_ids_list = []
         for note in notes:
+            if note.file:
+                file = File.query.filter_by(file_uuid=note.file).first()
+                note.file = file.file_name
             if note.encrypted:
                 encrypted_notes_ids_list.append(note.id)
+            log.debug(f'data: {note.date}, format: {type(note.date)} ')
             if type(note.date) is not str:
                 note.date = note.date.strftime('%d %B %Y - %H:%M:%S')
+            
         log.debug(notes)
         return render_template("notes_list.html", notes=notes, loggedin=active_session(), encrypted_notes_ids_list=encrypted_notes_ids_list)
     else:
@@ -306,7 +322,7 @@ def shared_notes(user):
 
 @app.route("/add_note", methods=[GET,POST])
 def add_note():
-    log.debug('funkcja add_note?')
+    log.debug('funkcja add_note')
     if request.method == POST:
         user = session['user']
         log.debug(request.form)
@@ -316,23 +332,21 @@ def add_note():
             encrypt = request.form[ENCRYPT_FIELD_ID]
             public = request.form[PUBLIC_FIELD_ID]
             who_can_read = request.form[WHO_CAN_READ_FIELD_ID]
+            f = request.files[FILE_FIELD_ID]
         except Exception as e:
             log.debug(f'błąd: {e}')
-            return make_response(jsonify({"msg": str(e), "status":400}), 400)
+            return make_response(jsonify({"msg": 'błąd z wczytaniem danych z formularza', "status":400}), 400)
 
         log.debug(f'encrypt: {encrypt}, public: {public}, who_can_read: {who_can_read} ')
         newNote = Note(author=user, date=datetime.utcnow())
 
         log.debug('pobranie zmiennych z formularza')
         log.debug(f'note content: {note_content} ')
-        if encrypt == 'false':
-            log.debug(f'false jest stringiem: -- {encrypt}')
 
         if encrypt == 'true':
             log.debug('zaszyfrowana notatka')
             encrypt_passwd = request.form[ENCRYPT_PASSWD_FIELD_ID]
             newNote.encrypted = True
-            #newNote.note_content = 'zaszyfrowana treść: ' + note_content
             newNote.note_content, newNote.salt, newNote.iv = encrypt_note_content(note_content,encrypt_passwd)
         else:
             log.debug('niezaszyfrowana notatka')
@@ -352,6 +366,33 @@ def add_note():
                     newNote.who_can_read = u
                 else:
                     log.debug(f'niepoprawna forma adresu email: {u}')
+        log.debug(f'plik: {f}')
+        if f:
+            filename_extension = f.filename.rsplit('.', 1)[1].lower()
+            log.debug(f'rozszerzenie pliku: {filename_extension}')
+            file_uuid = str(uuid4()) + '.' + filename_extension
+            if not allowed_file(f.filename):
+                return make_response(jsonify({"msg": 'Dadanie notatki nie powiodło się. Niewłaściwy format pliku.', "status":400}), 400)
+            try:
+                uuid_filename = secure_filename(file_uuid)
+                log.debug(f'plik: {f.filename}')
+                log.debug(f'ścieżka: {uuid_filename}')
+                f.save(os.path.join(app.config['UPLOAD_FOLDER'], uuid_filename))
+                try:
+                    newNote.file = file_uuid
+                    newFile = File(file_uuid=file_uuid, file_name=f.filename)
+                    db.session.add(newFile)
+                    db.session.commit()
+                except Exception as e:
+                    log.debug(e)
+                    log.debug('zapisywanie pliku do bazy nie powiodło się.')
+                    return make_response(jsonify({"msg": 'Dadanie notatki nie powiodło się. Nie udało się zapisać pliku do bazy.', "status":400}), 400)
+
+            except Exception as e:
+                log.debug(e)
+                log.debug('zapisywanie pliku nie powiodło się')
+                return make_response(jsonify({"msg": 'Dadanie notatki nie powiodło się. Nie udało się zapisać pliku.', "status":400}), 400)
+
         try:
             log.debug('dodanie notatki do bazy danych')
             db.session.add(newNote)
@@ -368,6 +409,12 @@ def add_note():
             return render_template("add_note.html", loggedin=active_session())
         else:
             abort(401)
+
+
+def allowed_file(filename):
+    return '.' in filename and \
+           filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+
 
 def encrypt_note_content(note_content, password):
     salt = get_random_bytes(16)
@@ -401,13 +448,6 @@ def decode_note():
         return jsonify({'message': 'Poprawnie odszyfrowano notatkę.', 'decrypted_note_content': decrypted_note, 'status':200}), 200
     except ValueError:
         return jsonify({'message': 'Błędne hasło.', 'status':400}), 400
-
-
-
-
-def allowed_file(filename):
-    return '.' in filename and \
-           filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
 @app.route('/upload', methods=['GET', 'POST'])
 def upload_file():

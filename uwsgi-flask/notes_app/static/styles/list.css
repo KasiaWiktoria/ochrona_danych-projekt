@@ -2,6 +2,12 @@
     font-size: 21px;
     color: var(--main-color);
     padding-bottom: 10px;
+    align-items: center;
+    margin-top: 5px;
+}
+.author span{
+    font-size: 15px;
+    color: #000;
 }
 
 .title{
@@ -17,12 +23,25 @@
     margin-bottom: 30px;
 }
 
+.note_field:hover {
+    box-shadow: 5px 4px 10px #0000003e;
+}
+
 .max-width-elem{
-    padding: 5px;
+    padding: 5px 0;
     justify-content: center;
     background-color: var(--main-color);
-    margin-bottom: 20px;
     color: #fff;
+}
+
+
+.empty-warning {
+    display: flex;
+    width: 100%;
+    margin: auto;
+    padding: 50px 0;
+    text-align: center;
+    justify-content: center;
 }
 
 .max-width-elem.encrypted{
@@ -31,4 +50,8 @@
 
 .form-row{
     margin-top: 30px;
+}
+
+form .form-row label.decrypted_pass{
+    width: unset;
 }

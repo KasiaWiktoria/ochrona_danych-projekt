@@ -6,24 +6,28 @@ const DECRYPT_PASSWD_FIELD_ID = "decrypt_passwd"
 
 document.addEventListener('DOMContentLoaded', function (event) {
     let encrypted_notes_ids_list = getNotesIdsList()
-    
-    encrypted_notes_ids_list.forEach(note_id => {
-        addEventListenersForEncryptedNotes(note_id)
-    })
+    if (encrypted_notes_ids_list != []){
+        encrypted_notes_ids_list.forEach(note_id => {
+            addEventListenersForEncryptedNotes(note_id)
+        })
+    }
 })
 
 function getNotesIdsList(){
     let str = document.getElementById('encrypted_notes_ids_list').textContent
-    let list_str = str.substring(
-        str.lastIndexOf("[") + 1, 
-        str.lastIndexOf("]")
-    );
-    list_str = list_str.split(',')
     let encrypted_notes_ids_list = []
-    list_str.forEach(element => {
-        encrypted_notes_ids_list.push(element.trim())
-    });
-    console.log(encrypted_notes_ids_list)
+    if (str != '[]'){
+        let list_str = str.substring(
+            str.lastIndexOf("[") + 1, 
+            str.lastIndexOf("]")
+        );
+        list_str = list_str.split(',')
+        
+        list_str.forEach(element => {
+            encrypted_notes_ids_list.push(element.trim())
+        });
+        console.log(encrypted_notes_ids_list)
+    }
     return encrypted_notes_ids_list
 }
 
@@ -51,11 +55,6 @@ function addEventListenersForEncryptedNotes(note_id){
 
     decryptNoteForm.addEventListener('submit', function (event) {
         event.preventDefault()
-        console.log('ok')
-        console.log('note_id: ', note_id)
-    
-        console.log(decryptNoteForm['note_id'].value)
-        note_id = decryptNoteForm['note_id'].value
     
         let decryptPasswdField = document.getElementById(note_id + '-' + DECRYPT_PASSWD_FIELD_ID)
     
@@ -71,7 +70,6 @@ function addEventListenersForEncryptedNotes(note_id){
 function submitForm(form, name) {
     let loginUrl = URL + name;
     console.log(loginUrl);
-    console.log(form)
     let note_id = form['note_id'].value
     let headers = getCSRFheaders(note_id)
 
@@ -101,7 +99,7 @@ function showMessages(response, note_id) {
     let id = note_id + "-button-submit-form";
 
     if (status === HTTP_STATUS.OK) {
-        console.log("Udało się odszyfrować. ", response.message);
+        console.log(response.message);
         showNote(response.decrypted_note_content, note_id)
     } else if (status == HTTP_STATUS.BAD_REQUEST) {
         console.log("Podano niepoprawne hasło.")
@@ -114,16 +112,12 @@ function showMessages(response, note_id) {
 }
 
 function showNote(note, note_id){
-    let field_id = note_id+'_note_field'
-    console.log('field_id: ', field_id)
-    let note_field = document.getElementById(field_id)
+    let note_field = document.getElementById(note_id+'_note_field')
     let text = document.createElement('p')
     text.className = 'text'
     text.textContent = note //jsEscape(note)
     removeDecryptPasswdInput(note_field, note_id)
-    console.log('tutaj? note field: ', note_field)
     note_field.appendChild(text)
-    console.log('ok')
 }
 function removeDecryptPasswdInput(note_field, note_id){
     let decrypt_passwd_input = document.getElementById(note_id + '-decrypt-note-form')

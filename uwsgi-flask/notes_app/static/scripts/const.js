@@ -22,6 +22,7 @@ export const ENCRYPT_PASSWD_FIELD_ID = "encrypt_passwd"
 export const DECRYPT_PASSWD_FIELD_ID = "decrypt_passwd"
 export const PUBLIC_FIELD_ID = "public"
 export const WHO_CAN_READ_FIELD_ID = "who_can_read"
+export const FILE_FIELD_ID = 'file'
 //export const _FIELD_ID = 
 
 

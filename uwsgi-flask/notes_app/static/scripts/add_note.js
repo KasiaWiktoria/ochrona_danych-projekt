@@ -1,7 +1,7 @@
 import {addCorrectMessage, addfailureMessage, submitForm, updateCorrectnessMessage, prepareOtherEventOnChange} from './form_functions.js';
 import {showWarningMessage, removeWarningMessage, prepareWarningElem, appendAfterElem} from './warning_functions.js';
 import {isAnyFieldBlank, isLoginAvailable, validateLogin, validatePasswd, arePasswdsTheSame} from './validation_functions.js';
-import {GET, POST, URL, HTTP_STATUS, NOTE_CONTENT_FIELD_ID, ENCRYPT_FIELD_ID, PUBLIC_FIELD_ID, ENCRYPT_PASSWD_FIELD_ID, WHO_CAN_READ_FIELD_ID} from './const.js'
+import {GET, POST, URL, HTTP_STATUS, NOTE_CONTENT_FIELD_ID, ENCRYPT_FIELD_ID, PUBLIC_FIELD_ID, ENCRYPT_PASSWD_FIELD_ID, WHO_CAN_READ_FIELD_ID, FILE_FIELD_ID} from './const.js'
 import {htmlEncode, jsEscape} from './additional_functions.js'
 
 let users_who_can_read = []
@@ -172,7 +172,7 @@ document.addEventListener('DOMContentLoaded', function (event) {
             fields = [note_content, encryptPasswdField]
         }
         if(!isAnyFieldBlank(fields)) {
-            submitNoteForm(prepareForm(), "add_note");
+            submitNoteForm(newNoteForm, "add_note");
         } else {
             let id = "button-submit-form";
             addfailureMessage(id,"Żadne pole nie może pozostać puste.")
@@ -180,7 +180,7 @@ document.addEventListener('DOMContentLoaded', function (event) {
     });
 });
 
-function prepareForm(){
+function prepareForm(newNoteForm){
     let noteContentField = document.getElementById(NOTE_CONTENT_FIELD_ID)
     let encryptField = document.getElementById(ENCRYPT_FIELD_ID)
     let publicField = document.getElementById(PUBLIC_FIELD_ID)
@@ -209,13 +209,27 @@ function prepareForm(){
     } else {
         form.append(WHO_CAN_READ_FIELD_ID, null)
     }
+    
+    let file = document.getElementById(FILE_FIELD_ID).files[0]
+    console.log('file: ', file)
+    if (file){
+        form.append(FILE_FIELD_ID, file)
+    } else {
+        form.append(FILE_FIELD_ID, null)
+    }
     return form
 }
 
 function submitNoteForm(form, name) {
-    let loginUrl = URL + name;
-    console.log(loginUrl);
-    console.log(form)
+    let url = URL + name;
+    console.log(url);
+    let encryptField = document.getElementById(ENCRYPT_FIELD_ID)
+    let publicField = document.getElementById(PUBLIC_FIELD_ID)
+
+    form = new FormData(form)
+    form.append(WHO_CAN_READ_FIELD_ID, users_who_can_read)
+    form.append(ENCRYPT_FIELD_ID, encryptField.checked)
+    form.append(PUBLIC_FIELD_ID, publicField.checked)
 
     let registerParams = {
         method: POST,
@@ -224,7 +238,7 @@ function submitNoteForm(form, name) {
         headers
     };
 
-    fetch(loginUrl, registerParams)
+    fetch(url, registerParams)
             .then(response => getResponseData(response))
             .then(response =>showMessages(response))
             .catch(err => {

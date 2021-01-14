@@ -33,7 +33,7 @@
             {% if loggedin %}
             <div class="left_panel">
                 <a href="/logout">Wyloguj</a>
-                <a href="/login">
+                <a href="/notes_list">
                     <img src="/images/konto.svg" alt="moje konto"> 
                 </a>
             </div>
@@ -48,8 +48,11 @@
         <section class="text">
             
             <h1 id="title">Lista twoich notatek</h1>
+            {% if notes|length < 1 %}
+                <div class="empty-warning">Nie masz żadnych notatek</div>
+            {% endif %}
 
-            <div id="encrypted_notes_ids_list" type="hidden">{{encrypted_notes_ids_list}}</div>
+            <div id="encrypted_notes_ids_list" hidden>{{encrypted_notes_ids_list}}</div>
             {% for note in notes %}
                 <div class="note_field" id="{{note.id|string + '_note_field'}}">
                     {% if note.public %}
@@ -58,14 +61,14 @@
                     {% if note.encrypted %}
                         <div class="max-width-elem encrypted">NOTATKA ZASZYFROWANA</div>
                     {% endif %}
-                    <div class="author">{{note.author}}</div>
+                    <div class="author"><span>Autor:</span> {{note.author}}</div>
                     <div class="date">{{note.date}}</div>
                     {% if note.encrypted %}
                         <form id="{{note.id|string + '-decrypt-note-form'}}">
                             <input id="{{note.id|string + '-csrf_token'}}" type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
                             <input type="hidden" name="note_id" value="{{ note.id }}"/>
                             <div class="form-row">
-                                <label id='label_passwd' for="decrypt_passwd">Podaj hasło do odszyfrowania notatki: </label>
+                                <label class="decrypted_pass" id='label_passwd' for="decrypt_passwd">Podaj hasło do odszyfrowania notatki: </label>
                                 <input id="{{note.id|string + '-decrypt_passwd'}}" type="password" name="decrypt_passwd">
                                 <input class="btn small" id="{{note.id|string + '-button-submit-form'}}" type="submit" value="Odszyfruj notatkę"/> 
                             </div>

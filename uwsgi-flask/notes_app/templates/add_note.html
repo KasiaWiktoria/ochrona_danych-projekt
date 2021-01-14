@@ -33,7 +33,7 @@
             {% if loggedin %}
             <div class="left_panel">
                 <a href="/logout">Wyloguj</a>
-                <a href="/login">
+                <a href="/notes_list">
                     <img src="/images/konto.svg" alt="moje konto"> 
                 </a>
             </div>
@@ -49,11 +49,13 @@
             
             <h1 id="title">Dodaj notatkę</h1>
 
-            <form class="add-note-form" id="add-note-form">
+            <form class="add-note-form" id="add-note-form" enctype = "multipart/form-data">
                 <input id="csrf_token" type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
 
                 <label for="note_content">treść notatki: </label>
                 <textarea name="note_content" id="note_content" cols="30" rows="10"></textarea>
+
+                <input id="file" type = "file" name = "file" />
 
                 <div class="chbox-field">
                     <input class="chbox" type="checkbox" id="encrypt">                        

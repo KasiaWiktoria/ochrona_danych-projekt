@@ -178,8 +178,9 @@ nav ul li a:hover {
 }
 
 .btn.small{
-    padding: 5px 15px;
+    padding: 10px 15px;
     font-size: 12px;
+    margin-bottom: 0;
 }
 
 .btn:hover{
