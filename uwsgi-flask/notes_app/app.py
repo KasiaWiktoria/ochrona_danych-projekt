@@ -98,7 +98,7 @@ class Session(db.Model):
 
     id = db.Column(db.Integer, primary_key=True)
     session_id = db.Column(db.String(128), unique=True, nullable=False)
-    user = db.Column(db.String(70), unique=True, nullable=False)
+    user = db.Column(db.String(70), nullable=False)
     _hash = db.Column(db.Text, nullable=False)
 
     def __repr__(self):
@@ -153,12 +153,14 @@ def login():
             if bcrypt.using(rounds=15).verify(password, hash_from_db):
                 log.debug("Hasło jest poprawne.")
                 hash_ = uuid4().hex 
+                '''
                 try:
                     new_session = Session(session_id=SESSION_ID, user=username, _hash=hash_)
                     db.session.add(new_session)
                     db.session.commit()
                 except Exception as e:
                     log.debug(e)
+                '''
                 session.permanent = True
                 session['user'] = username
                 log.debug('okokokok')
@@ -278,11 +280,14 @@ def notes_list():
         user = session['user']
         notes = Note.query.filter((Note.author==user) | (Note.public==True)).all()
         notes = notes + shared_notes(user)
+        encrypted_notes_ids_list = []
         for note in notes:
+            if note.encrypted:
+                encrypted_notes_ids_list.append(note.id)
             if type(note.date) is not str:
                 note.date = note.date.strftime('%d %B %Y - %H:%M:%S')
         log.debug(notes)
-        return render_template("notes_list.html", notes=notes, loggedin=active_session())
+        return render_template("notes_list.html", notes=notes, loggedin=active_session(), encrypted_notes_ids_list=encrypted_notes_ids_list)
     else:
         abort(401)
 
@@ -395,7 +400,7 @@ def decode_note():
         log.debug(f'odszyfrowana notatka: {decrypted_note} ')
         return jsonify({'message': 'Poprawnie odszyfrowano notatkę.', 'decrypted_note_content': decrypted_note, 'status':200}), 200
     except ValueError:
-        return jsonify({'message': 'Błędne hasło.'}), 400
+        return jsonify({'message': 'Błędne hasło.', 'status':400}), 400
 
 
 
