@@ -6,6 +6,12 @@ import {htmlEncode, jsEscape} from './additional_functions.js'
 
 let users_who_can_read = []
 
+
+const csrfToken = document.getElementById('csrf_token').value
+const headers = new Headers({
+    "X-CSRF-Token": csrfToken
+});
+
 let chbox = document.getElementById('public')
 
 chbox.addEventListener('change', function (event){
@@ -159,6 +165,12 @@ document.addEventListener('DOMContentLoaded', function (event) {
         console.log(note_content.textContent)
 
         let fields = [note_content];
+
+        let encryptField = document.getElementById(ENCRYPT_FIELD_ID)
+        let encryptPasswdField = document.getElementById(ENCRYPT_PASSWD_FIELD_ID)
+        if (encryptField.checked){
+            fields = [note_content, encryptPasswdField]
+        }
         if(!isAnyFieldBlank(fields)) {
             submitNoteForm(prepareForm(), "add_note");
         } else {
@@ -212,7 +224,8 @@ function submitNoteForm(form, name) {
     let registerParams = {
         method: POST,
         body: form,
-        redirect: "follow"
+        redirect: "follow",
+        headers
     };
 
     fetch(loginUrl, registerParams)

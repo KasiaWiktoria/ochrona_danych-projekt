@@ -7,6 +7,7 @@ export function isAnyFieldBlank(fields) {
         if (field.value == "") {
             let message = "Pole nie może być puste.";
             let field_id = field.name
+            console.log('id pola: ', field_id)
             let warningElemId = field_id + "Warning"
             let warningElem = prepareWarningElem(warningElemId, message);
             appendAfterElem(field_id, warningElem);

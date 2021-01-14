@@ -50,10 +50,10 @@
             <h1 id="title">Dodaj notatkę</h1>
 
             <form class="add-note-form" id="add-note-form">
-            <input id="csrf_token" type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                <input id="csrf_token" type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
 
-                <label for="note">treść notatki: </label>
-                <textarea name="note" id="note_content" cols="30" rows="10"></textarea>
+                <label for="note_content">treść notatki: </label>
+                <textarea name="note_content" id="note_content" cols="30" rows="10"></textarea>
 
                 <div class="chbox-field">
                     <input class="chbox" type="checkbox" id="encrypt">                        
@@ -62,7 +62,7 @@
 
                 <div class="form-row">
                     <label id='label_passwd' for="encrypt_passwd">Podaj hasło do zaszyfrowania notatki: </label>
-                    <input id="encrypt_passwd" type="password">
+                    <input id="encrypt_passwd" type="password" name="encrypt_passwd">
                 </div>
 
                 <div class="chbox-field">

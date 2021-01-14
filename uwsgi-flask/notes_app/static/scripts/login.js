@@ -4,6 +4,11 @@ import {isAnyFieldBlank, isLoginAvailable, validateLogin, validatePasswd, arePas
 import {GET, POST, URL, HTTP_STATUS, LOGIN_FIELD_ID, PASSWD_FIELD_ID} from './const.js'
 
 
+const csrfToken = document.getElementById('csrf_token').value
+const headers = new Headers({
+    "X-CSRF-Token": csrfToken
+});
+
 document.addEventListener('DOMContentLoaded', function (event) {
 
     prepareEventOnChange(LOGIN_FIELD_ID, isLoginBlank);
@@ -55,7 +60,8 @@ function submitLoginForm(form, name) {
         method: POST,
         mode: 'cors',
         body: new FormData(form),
-        redirect: "follow"
+        redirect: "follow",
+        headers
     };
 
     fetch(loginUrl, registerParams)

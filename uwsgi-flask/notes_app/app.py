@@ -50,6 +50,8 @@ class Note(db.Model):
     note_content = db.Column(db.Text)
     public = db.Column(db.Boolean, default=False)
     encrypted = db.Column(db.Boolean, default=False)
+    salt = db.Column(db.String(50), nullable=True)
+    iv = db.Column(db.String(100), nullable=True)
     _who_can_read = db.Column(db.String(250), nullable=True)
     @property
     def who_can_read(self):
@@ -308,7 +310,7 @@ def add_note():
             encrypt_passwd = request.form[ENCRYPT_PASSWD_FIELD_ID]
             newNote.encrypted = True
             newNote.note_content = 'zaszyfrowana treść: ' + note_content
-            #newNote.note_content = encrypt(note_content)
+            newNote.note_content, newNote.salt, newNote.iv = encrypt_note_content(note_content,encrypt_passwd)
         else:
             log.debug('niezaszyfrowana notatka')
             newNote.note_content = note_content
@@ -319,16 +321,14 @@ def add_note():
         elif who_can_read != 'null':
             log.debug('lista osób które mogą czytać')
             log.debug(f'id nowej notatki: {newNote.id} ')
-            #newSharedNote = sharedNote(user,newNote.id)
-            #db.session.add(newSharedNote)
-            #db.session.commit()
             log.debug(f'kto może czytać: {who_can_read}')
             who_can_read = who_can_read.split(',')
-            #newNote._who_can_read = ''
             for u in who_can_read:
-                log.debug(f'użytkownik: {u}')
-                newNote.who_can_read = u
-
+                if validateEmail(u):
+                    log.debug(f'użytkownik: {u}')
+                    newNote.who_can_read = u
+                else:
+                    log.debug(f'niepoprawna forma adresu email: {u}')
         try:
             log.debug('dodanie notatki do bazy danych')
             db.session.add(newNote)
@@ -344,6 +344,18 @@ def add_note():
             return render_template("add_note.html", loggedin=active_session())
         else:
             abort(401)
+
+def encrypt_note_content(note_content, password):
+    salt = get_random_bytes(16)
+    key = PBKDF2(password.encode('utf-8'),salt)
+    to_encrypt = note_content.encode('utf-8')
+
+    cipher = AES.new(key, AES.MODE_CBC)
+    log.debug(f'długość iv: {len(cipher.iv)}')
+    encrypted_note_bytes = cipher.encrypt(pad(to_encrypt, AES.block_size))
+    iv = b64encode(cipher.iv).decode('utf-8')
+    encrypted_note = b64encode(encrypted_note_bytes).decode('utf-8')
+    return encrypted_note, salt, iv
 
 
 def allowed_file(filename):

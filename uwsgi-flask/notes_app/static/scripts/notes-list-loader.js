@@ -1,6 +1,11 @@
 import {addCorrectMessage, addfailureMessage} from './form_functions.js';
 import {GET, POST, URL, HTTP_STATUS} from './const.js'
 
+const csrfToken = document.getElementById('csrf_token').value
+const headers = new Headers({
+    "X-CSRF-Token": csrfToken
+});
+
 let page_url = URL + 'get_notes_list'
 document.addEventListener('DOMContentLoaded', function (event) {
     loadNotes(page_url);
@@ -131,28 +136,10 @@ function fetchPacks(page_url){
     let sendParams = {
         credentials: 'include',
         method: GET,
-        mode: 'cors'
+        mode: 'cors',
+        headers
     };
     return fetch(url, sendParams)
-}
-
-function addNavListeners(){
-    let prev_button = document.getElementById('prev_btn')
-    let next_button = document.getElementById('next_btn')
-
-    if (prev_button != null){
-        prev_button.addEventListener('click', function (event) {
-            let page_url = prev_button.getAttribute('page_url')
-            loadNotes(page_url);
-        })
-    }
-
-    if (next_button != null){
-    next_button.addEventListener('click', function (event) {
-        let page_url = next_button.getAttribute('page_url')
-        loadNotes(page_url);
-    })
-    }
 }
 
 function clearTable(){
