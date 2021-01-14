@@ -180,46 +180,6 @@ document.addEventListener('DOMContentLoaded', function (event) {
     });
 });
 
-function prepareForm(newNoteForm){
-    let noteContentField = document.getElementById(NOTE_CONTENT_FIELD_ID)
-    let encryptField = document.getElementById(ENCRYPT_FIELD_ID)
-    let publicField = document.getElementById(PUBLIC_FIELD_ID)
-
-    console.log('treść: ', noteContentField.value)
-    console.log('zaszyfrować?: ', encryptField.checked)
-    console.log('publiczna: ', publicField.checked)
-
-    let form = new FormData()
-
-    console.log('value: ', noteContentField.value)
-    console.log('textContent: ', noteContentField.textContent)
-    form.append(NOTE_CONTENT_FIELD_ID, noteContentField.value)
-    if (encryptField.checked){
-        console.log('zaszyfrowana notatka')
-        form.append(ENCRYPT_FIELD_ID, encryptField.checked)
-        let encryptPasswdField = document.getElementById(ENCRYPT_PASSWD_FIELD_ID)
-        form.append(ENCRYPT_PASSWD_FIELD_ID, encryptPasswdField.value)
-    } else{
-        form.append(ENCRYPT_FIELD_ID, encryptField.checked)
-        form.append(ENCRYPT_PASSWD_FIELD_ID, null)
-    }
-    form.append(PUBLIC_FIELD_ID, publicField.checked)
-    if (users_who_can_read.length > 0) {
-        form.append(WHO_CAN_READ_FIELD_ID, users_who_can_read)
-    } else {
-        form.append(WHO_CAN_READ_FIELD_ID, null)
-    }
-    
-    let file = document.getElementById(FILE_FIELD_ID).files[0]
-    console.log('file: ', file)
-    if (file){
-        form.append(FILE_FIELD_ID, file)
-    } else {
-        form.append(FILE_FIELD_ID, null)
-    }
-    return form
-}
-
 function submitNoteForm(form, name) {
     let url = URL + name;
     console.log(url);

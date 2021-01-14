@@ -24,7 +24,7 @@ app = Flask(__name__, static_url_path="")
 app.config ['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///db.sqlite3' #os.getenv("DATABASE_URL", "sqlite://")
 app.config ['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config["PERMANENT_SESSION_LIFETIME"] = timedelta(minutes=5)
-app.config ['UPLOAD_FOLDER'] = './app/user-files'
+app.config ['UPLOAD_FOLDER'] = '/app/user-files'
 app.config['SECRET_KEY'] = SECRET_KEY
 
 log = app.logger
@@ -292,10 +292,11 @@ def notes_list():
         notes = Note.query.filter((Note.author==user) | (Note.public==True)).all()
         notes = notes + shared_notes(user)
         encrypted_notes_ids_list = []
+        file_names = {}
         for note in notes:
             if note.file:
                 file = File.query.filter_by(file_uuid=note.file).first()
-                note.file = file.file_name
+                file_names[note.file] = file.file_name
             if note.encrypted:
                 encrypted_notes_ids_list.append(note.id)
             log.debug(f'data: {note.date}, format: {type(note.date)} ')
@@ -303,7 +304,7 @@ def notes_list():
                 note.date = note.date.strftime('%d %B %Y - %H:%M:%S')
             
         log.debug(notes)
-        return render_template("notes_list.html", notes=notes, loggedin=active_session(), encrypted_notes_ids_list=encrypted_notes_ids_list)
+        return render_template("notes_list.html", notes=notes, loggedin=active_session(), encrypted_notes_ids_list=encrypted_notes_ids_list, file_names=file_names)
     else:
         abort(401)
 
@@ -315,7 +316,6 @@ def shared_notes(user):
         user_db = User.query.filter_by(login=user).first()
         log.debug(f'kto może przeczytać tą notatkę: {note.who_can_read}')
         log.debug(f'email użytkownika: {user_db.email}')
-        log.debug(f'user in Note.who_can_read: {user_db.email in note.who_can_read}')
         if user_db.email in note.who_can_read:
             shared_notes.append(note)
     return shared_notes
@@ -449,37 +449,10 @@ def decode_note():
     except ValueError:
         return jsonify({'message': 'Błędne hasło.', 'status':400}), 400
 
-@app.route('/upload', methods=['GET', 'POST'])
-def upload_file():
-    if request.method == 'POST':
-        # check if the post request has the file part
-        if 'file' not in request.files:
-            flash('No file part')
-            return redirect(request.url)
-        file = request.files['file']
-        # if user does not select file, browser also
-        # submit an empty part without filename
-        if file.filename == '':
-            flash('No selected file')
-            return redirect(request.url)
-        if file and allowed_file(file.filename):
-            filename = secure_filename(file.filename)
-            file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
-            return redirect(url_for('uploaded_file',
-                                    filename=filename))
-    return '''
-    <!doctype html>
-    <title>Upload new File</title>
-    <h1>Upload new File</h1>
-    <form method=post enctype=multipart/form-data>
-      <input type=file name=file>
-      <input type=submit value=Upload>
-    </form>
-    '''
-
-@app.route('/uploads/<filename>')
-def uploaded_file(filename):
-    return send_from_directory(app.config['UPLOAD_FOLDER'], filename)
+@app.route('/uploads/<path:filename>')
+def download_file(filename):
+    return send_from_directory(app.config['UPLOAD_FOLDER'],
+                               filename, as_attachment=True)
 
 def active_session():
     try:
