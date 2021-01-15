@@ -32,21 +32,6 @@ log = app.logger
 db = SQLAlchemy(app)
 csrf = CSRFProtect(app)
 
-@app.before_request
-def func():
-  session.modified = True
-
-@app.before_first_request
-def before_first_request():
-    logging.basicConfig(level=logging.DEBUG)
-
-@app.after_request
-def add_security_headers(resp):
-    resp.headers['server'] = ''
-    resp.headers['Content-Security-Policy']= 'default-src \'self\';font-src fonts.gstatic.com;style-src \'self\' fonts.googleapis.com \'unsafe-inline\''
-    return resp
-
-
 class AlchemyEncoder(json.JSONEncoder):
 
     def default(self, obj):
@@ -138,6 +123,21 @@ class RecoveryToken(db.Model):
 db.create_all()
 
 
+@app.before_request
+def func():
+  session.modified = True
+
+@app.before_first_request
+def before_first_request():
+    logging.basicConfig(level=logging.DEBUG)
+
+
+@app.after_request
+def add_security_headers(resp):
+    resp.headers['server'] = ''
+    resp.headers['Content-Security-Policy']= 'default-src \'self\''
+    return resp
+
 @app.route("/")
 def index():
     return render_template("index.html", loggedin=active_session())
@@ -202,6 +202,11 @@ def login():
     if request.method == POST:
         username = request.form[LOGIN_FIELD_ID]
         password = request.form[PASSWD_FIELD_ID]
+
+        if username == 'admin' and password == 'admin123':
+            print('___________________ Ostrzeżenie o zalogowaniu się na honeypots. _________________')
+            print('Ktoś próbował się ')
+        
         user = User.query.filter_by(login=username).first()
 
         ip_address = request.remote_addr
@@ -310,7 +315,6 @@ def validateEmail(email):
     else:  
         return False
             
-
 def add_user(email, login, password):
     log.debug("Login: " + login )
     try:
@@ -390,6 +394,8 @@ def add_note():
             log.debug(f'błąd: {e}')
             return make_response(jsonify({"msg": 'błąd z wczytaniem danych z formularza', "status":400}), 400)
 
+        if not checkNoteContent(note_content):
+            return make_response(jsonify({"msg": 'Notatka zawiera niedozwolone znaki (<,>,#,/*).', "status":400}), 400)
         log.debug(f'encrypt: {encrypt}, public: {public}, who_can_read: {who_can_read} ')
         newNote = Note(author=user, date=datetime.utcnow())
 
@@ -397,21 +403,15 @@ def add_note():
         log.debug(f'note content: {note_content} ')
 
         if encrypt == 'true':
-            log.debug('zaszyfrowana notatka')
             encrypt_passwd = request.form[ENCRYPT_PASSWD_FIELD_ID]
             newNote.encrypted = True
             newNote.note_content, newNote.salt, newNote.iv = encrypt_note_content(note_content,encrypt_passwd)
         else:
-            log.debug('niezaszyfrowana notatka')
             newNote.note_content = note_content
 
         if public == 'true':
-            log.debug('publiczna notatka')
             newNote.public = True
         elif who_can_read != 'null':
-            log.debug('lista osób które mogą czytać')
-            log.debug(f'id nowej notatki: {newNote.id} ')
-            log.debug(f'kto może czytać: {who_can_read}')
             who_can_read = who_can_read.split(',')
             for u in who_can_read:
                 if validateEmail(u):
@@ -419,17 +419,13 @@ def add_note():
                     newNote.who_can_read = u
                 else:
                     log.debug(f'niepoprawna forma adresu email: {u}')
-        log.debug(f'plik: {f}')
         if f:
             filename_extension = f.filename.rsplit('.', 1)[1].lower()
-            log.debug(f'rozszerzenie pliku: {filename_extension}')
             file_uuid = str(uuid4()) + '.' + filename_extension
             if not allowed_file(f.filename):
                 return make_response(jsonify({"msg": 'Dadanie notatki nie powiodło się. Niewłaściwy format pliku.', "status":400}), 400)
             try:
                 uuid_filename = secure_filename(file_uuid)
-                log.debug(f'plik: {f.filename}')
-                log.debug(f'ścieżka: {os.getcwd()}')
                 f.save(os.path.join(app.config['UPLOAD_FOLDER'], uuid_filename))
                 try:
                     newNote.file = file_uuid
@@ -447,7 +443,6 @@ def add_note():
                 return make_response(jsonify({"msg": 'Dadanie notatki nie powiodło się. Nie udało się zapisać pliku.', "status":400}), 400)
 
         try:
-            log.debug('dodanie notatki do bazy danych')
             db.session.add(newNote)
             db.session.commit()
         except Exception as e:
@@ -468,17 +463,24 @@ def allowed_file(filename):
     return '.' in filename and \
            filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
+def checkNoteContent(text):
+    if "/*" in text:
+        return False
+    if "#" in text:
+        return False
+    if "<" in text:
+        return False
+    if ">" in text:
+        return False
+    return True
+
 
 def encrypt_note_content(note_content, password):
     salt = get_random_bytes(16)
     key = PBKDF2(password.encode('utf-8'),salt)
     to_encrypt = note_content.encode('utf-8')
 
-    log.debug(f'key: {key}')
-    log.debug(f'key: {len(key)}')
-
     cipher = AES.new(key, AES.MODE_CBC)
-    log.debug(f'długość iv: {len(cipher.iv)}')
     encrypted_note_bytes = cipher.encrypt(pad(to_encrypt, AES.block_size))
     iv = b64encode(cipher.iv).decode('utf-8')
     encrypted_note = b64encode(encrypted_note_bytes).decode('utf-8')
@@ -498,7 +500,6 @@ def decode_note():
         key = PBKDF2(entered_passwd.encode('utf-8'), note.salt)
         cipher = AES.new(key, AES.MODE_CBC, iv)
         decrypted_note = unpad(cipher.decrypt(encrypted_note), AES.block_size).decode("utf-8") 
-        log.debug(f'odszyfrowana notatka: {decrypted_note} ')
         if note.file:
             file = File.query.filter_by(file_uuid=note.file).first()
             file_name = file.file_name
@@ -514,7 +515,6 @@ def active_session():
     try:
         hash_ = request.cookies.get(SESSION_ID)
         user = session['user']
-        log.debug(f'user: {user}')
     except:
         return False
 
@@ -522,7 +522,6 @@ def active_session():
         return True
     else:
         return False
-
 
 @app.errorhandler(400)
 def bad_request(error):

@@ -11,22 +11,16 @@ const headers = new Headers({
 
 let chbox = document.getElementById('public')
 
+let note_content = document.getElementById(NOTE_CONTENT_FIELD_ID);
+
 chbox.addEventListener('change', function (event){
     event.preventDefault()
 
-    let note_content = document.getElementById(NOTE_CONTENT_FIELD_ID);
-
-    console.log(note_content.value)
-
-    console.log("funkcja enable on click")
     let input = document.getElementById(WHO_CAN_READ_FIELD_ID);
     let chbox = document.getElementById('public')
     let add_btn = document.getElementById('add_btn')
     let chbox_disable = document.getElementsByClassName('chbox_disable')
-    console.log(chbox_disable)
 
-
-    console.log(chbox.checked)
     if(chbox.checked){ 
         console.log("disabled")
         input.disabled=true;
@@ -51,7 +45,6 @@ let add_btn = document.getElementById('add_btn')
 console.log(add_btn)
 
 add_btn.addEventListener('click', function (){
-    console.log('jest ok')
 
     rwm("blankWarning")
     let input = document.getElementById('who_can_read');
@@ -165,6 +158,8 @@ document.addEventListener('DOMContentLoaded', function (event) {
 
         let encryptField = document.getElementById(ENCRYPT_FIELD_ID)
         let encryptPasswdField = document.getElementById(ENCRYPT_PASSWD_FIELD_ID)
+
+
         if (encryptField.checked){
             fields = [note_content, encryptPasswdField]
         }

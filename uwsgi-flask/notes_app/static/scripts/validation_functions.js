@@ -131,3 +131,15 @@ export function arePasswdsTheSame() {
         return false;
     }
 }
+
+export function checkNoteContent(text){
+    if((text).includes("<"))
+        return false;
+    if((text).includes(">"))
+        return false;
+    if((text).includes("/*"))
+        return false;
+    if((text).includes("#"))
+        return false;
+    return true;
+}
