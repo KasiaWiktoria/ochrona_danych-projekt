@@ -16,7 +16,7 @@ document.addEventListener('DOMContentLoaded', function (event) {
     registrationForm.addEventListener("submit", function (event) {
         event.preventDefault();
 
-        var canSend = (AVAILABLE_LOGIN && validateLogin() == "" && validatePasswd() == "" && arePasswdsTheSame());
+        var canSend = (AVAILABLE_LOGIN && validateEmail() == "" && validateLogin() == "" && validatePasswd() == "" && arePasswdsTheSame());
 
         let email = document.getElementById(EMAIL_FIELD_ID)
         let login = document.getElementById(LOGIN_FIELD_ID)

@@ -1,4 +1,4 @@
-import {GET, POST, URL, HTTP_STATUS, POLSKIE_ZNAKI, EMAIL_FIELD_ID, POLSKIE_ZNAKI_MALE, POLSKIE_ZNAKI_DUZE, LOGIN_FIELD_ID, PASSWD_FIELD_ID, REPEAT_PASSWD_FIELD_ID} from './const.js'
+import {GET, POST, URL, HTTP_STATUS, POLSKIE_ZNAKI, EMAIL_FIELD_ID, POLSKIE_ZNAKI_MALE, POLSKIE_ZNAKI_DUZE, LOGIN_FIELD_ID, PASSWD_FIELD_ID, REPEAT_PASSWD_FIELD_ID, FILE_FIELD_ID} from './const.js'
 import {prepareWarningElem, appendAfterElem } from './warning_functions.js';
 
 export function isAnyFieldBlank(fields) {
@@ -54,8 +54,8 @@ export function validateEmail(){
     }
 }
 
-export function validateFile(IMAGE_FIELD_ID) {
-    let filePath = document.getElementById(IMAGE_FIELD_ID).value;
+export function validateFile(FILE_FIELD_ID) {
+    let filePath = document.getElementById(FILE_FIELD_ID).value;
           
             var allowedExtensions =  
                     /(\.txt|\.docx|\.doc|\.pdf)$/i; 
@@ -65,7 +65,7 @@ export function validateFile(IMAGE_FIELD_ID) {
             }  
             else  
             { 
-                document.getElementById(IMAGE_FIELD_ID).value = ''
+                document.getElementById(FILE_FIELD_ID).value = ''
                 return 'Nieprawidłowy format pliku. Dozwolone rozszerzenia: .txt, .docx, .doc, .pdf.'; 
             } 
 }
@@ -73,7 +73,6 @@ export function validateFile(IMAGE_FIELD_ID) {
 export function isLoginAvailable() {
     return Promise.resolve(checkLoginAvailability().then(function (statusCode) {
         if (statusCode === HTTP_STATUS.OK) {
-            console.log('login rzeczywiście jest zajęty')
             return false;
         } else if (statusCode === HTTP_STATUS.NOT_FOUND) {
             return true

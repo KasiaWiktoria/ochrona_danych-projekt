@@ -132,7 +132,6 @@ def password_recovery():
 def recover_password():
     enteredEmail = request.form[EMAIL_FIELD_ID]
     user = User.query.filter_by(email=enteredEmail).first()
-    log.debug(f'user: {user}')
 
     if user:
         recovery_token = token_urlsafe(64) 
@@ -186,8 +185,7 @@ def login():
         password = request.form[PASSWD_FIELD_ID]
 
         if username == 'admin' and password == 'admin123':
-            print('___________________ Ostrzeżenie o zalogowaniu się na honeypots. _________________')
-            print('Ktoś próbował się ')
+            print('___________________ Ostrzeżenie o zalogowaniu się na honeypot. _________________')
         
         user = User.query.filter_by(login=username).first()
 
@@ -196,7 +194,7 @@ def login():
 
         minute_ago = datetime.utcnow() - timedelta(seconds=60)
         attempts_count = len(LoginAttempt.query.filter(LoginAttempt.ip_address==ip_address, LoginAttempt.login_attempt_date > minute_ago, LoginAttempt.success==False).all())
-        log.debug(f'Liczba prób zarejestrowana w bazie danych w ciągu ostatniej minuty: {attempts_count}')
+        log.debug(f'Liczba prób logowania (z adresu ip: {ip_address}) zarejestrowana w bazie danych w ciągu ostatniej minuty: {attempts_count}')
         n = attempts_count
         if n is not None and n > 3:
 
@@ -261,7 +259,6 @@ def registration():
         email = request.form[EMAIL_FIELD_ID]
         login = request.form[LOGIN_FIELD_ID]
         password = request.form[PASSWD_FIELD_ID]
-        log.debug(f'email: {email}, login: {login}')
         if not validateEmail(email):
             log.debug('email nie przeszedł walidacji')
             return { "registration_status": 400 , 'message': 'Niepoprawna forma adresu email.'}, 400
@@ -305,7 +302,6 @@ def validateEmail(email):
         return False
             
 def add_user(email, login, password):
-    log.debug("Login: " + login )
     try:
         hashed_password = bcrypt.using(rounds=15).hash(password)
         new_user = User(email=email, login=login, passwd_hash=hashed_password)
@@ -330,13 +326,11 @@ def notes_list():
             if note.file:
                 file = File.query.filter_by(file_uuid=note.file).first()
                 file_names[note.file] = file.file_name
-                log.debug(f'file_names:  {file_names}')
             if note.encrypted:
                 encrypted_notes_ids_list.append(note.id)
         for note in notes:
             if type(note.date) is not str:
-                note.date = note.date.strftime('%d %B %Y - %H:%M:%S')            
-        log.debug(notes)
+                note.date = note.date.strftime('%d %B %Y - %H:%M:%S')  
         return render_template("notes_list.html", notes=notes, loggedin=active_session(), encrypted_notes_ids_list=encrypted_notes_ids_list, file_names=file_names)
     else:
         abort(401)
@@ -345,20 +339,15 @@ def shared_notes(user):
     shared_notes = []
     notes = Note.query.filter(Note.author!=user, Note.public!=True).all()
     for note in notes:
-        log.debug(f'note_content: {note.note_content} ')
         user_db = User.query.filter_by(login=user).first()
-        log.debug(f'kto może przeczytać tą notatkę: {note.who_can_read}')
-        log.debug(f'email użytkownika: {user_db.email}')
         if user_db.email in note.who_can_read:
             shared_notes.append(note)
     return shared_notes
 
 @app.route("/add_note", methods=[GET,POST])
 def add_note():
-    log.debug('funkcja add_note')
     if request.method == POST:
         user = session['user']
-        log.debug(request.form)
 
         try:
             note_content = request.form[NOTE_CONTENT_FIELD_ID]
@@ -372,11 +361,7 @@ def add_note():
 
         if not checkNoteContent(note_content):
             return make_response(jsonify({"msg": 'Notatka zawiera niedozwolone znaki (<,>,#,/*).', "status":400}), 400)
-        log.debug(f'encrypt: {encrypt}, public: {public}, who_can_read: {who_can_read} ')
         newNote = Note(author=user, date=datetime.utcnow())
-
-        log.debug('pobranie zmiennych z formularza')
-        log.debug(f'note content: {note_content} ')
 
         if encrypt == 'true':
             encrypt_passwd = request.form[ENCRYPT_PASSWD_FIELD_ID]
