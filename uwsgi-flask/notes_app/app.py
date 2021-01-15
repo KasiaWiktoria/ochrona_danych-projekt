@@ -11,6 +11,7 @@ from Cryptodome.Random import get_random_bytes
 from Cryptodome.Protocol.KDF import PBKDF2
 from flask_wtf.csrf import CSRFProtect
 from uuid import uuid4
+from secrets import token_urlsafe
 from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime, timedelta
 import os
@@ -42,7 +43,7 @@ def before_first_request():
 @app.after_request
 def add_security_headers(resp):
     resp.headers['server'] = ''
-    resp.headers['Content-Security-Policy']= ' default-src \'self\';font-src fonts.gstatic.com;style-src \'self\' fonts.googleapis.com \'unsafe-inline\''
+    resp.headers['Content-Security-Policy']= 'default-src \'self\';font-src fonts.gstatic.com;style-src \'self\' fonts.googleapis.com \'unsafe-inline\''
     return resp
 
 
@@ -125,19 +126,75 @@ class LoginAttempt(db.Model):
 
     def __repr__(self):
         return f'<Loggin Attempt for {self.ip_address}: {self.login_attempts} success: {self.success}>' 
+
+class RecoveryToken(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    token = db.Column(db.String(128), unique=True, nullable=False)
+    user = db.Column(db.String(70), nullable=False)
+    creation_date = db.Column(db.DateTime, nullable=False)
+
+    def __repr__(self):
+        return '<Session %r>' % self.session_id
 db.create_all()
 
 
 @app.route("/")
 def index():
-    log.debug(f'ścieżka: {os.getcwd()}')
-    ip_address = request.remote_addr
-    log.debug(f'IP adress: {ip_address}')
-    minute_ago = datetime.utcnow() - timedelta(seconds=60)
-    attempts_count = len(LoginAttempt.query.filter(LoginAttempt.ip_address==ip_address, LoginAttempt.login_attempt_date > minute_ago).all())
-
-    log.debug(f'ile jest dat logowania pomiędzy: {attempts_count}')
     return render_template("index.html", loggedin=active_session())
+
+@app.route("/password_recovery", methods=[GET])
+def password_recovery():
+    return render_template("password_recovery.html", loggedin=active_session())
+
+@app.route("/recover_password", methods=[POST])
+def recover_password():
+    log.debug('początek funkcji generującej url')
+    enteredEmail = request.form[EMAIL_FIELD_ID]
+    user = User.query.filter_by(email=enteredEmail).first()
+    log.debug(f'user: {user}')
+
+    if user:
+        recovery_token = token_urlsafe(64) 
+        try:
+            newRecoveryToken = RecoveryToken(token=recovery_token,user=user, creation_date=datetime.utcnow())
+            db.session.add(newRecoveryToken)
+            db.session.commit()
+        except Exception as e:
+            log.debug(f'błąd: {e}')
+            log.debug('Nie udało się zapisać do bazy.')
+            return jsonify({'message':'Coś poszło nie tak.', 'status': 400}), 400
+        recovery_url = URL + 'recover_password/' + recovery_token
+        print('_________________________________________________________________________')
+        print(f'Na adres email: {enteredEmail} wysłałabym url do zmiany hasła')
+        print(f'url do zmiany hasła: {recovery_url}')
+        print('_________________________________________________________________________')
+    log.debug('ok')
+    return jsonify({'message':'Na podany adres email wysłano url przekierowujący do strony na której możesz zmienić swoje hasło. Link przekierowujący będzie ważny przez 10 minut.', 'status': 200}), 200
+
+@app.route("/recover_password/<recovery_token>", methods=[GET])
+def recover_password_for_user(recovery_token):
+    recovery_token = RecoveryToken.query.filter_by(token=recovery_token).first()
+    if recovery_token.user and recovery_token.creation_date < datetime.utcnow() + timedelta(minutes=10):
+        return render_template('change_password.html', user=recovery_token.user)
+    else:
+        abort(404)
+
+@app.route('/reset_password', methods=[POST])
+def reset_password():
+    new_password = request.form[PASSWD_FIELD_ID]
+    username = request.form[LOGIN_FIELD_ID]
+
+    user = User.query.filter_by(login=username).first()
+    if user:
+        hashed_password = bcrypt.using(rounds=15).hash(new_password)
+        user.hashed_password = hashed_password
+        try:
+            db.session.commit()
+        except:
+            jsonify({'message':'Nie udało się zmienić hasła.', 'status': 400}), 400
+        return jsonify({'message':'Poprawnie zmieniono hasło.', 'status': 200}), 200
+    else:
+        return jsonify({'message':'Nie ma takeigo użytkownika w bazie danych.', 'status': 404}), 404
 
 @app.route("/login", methods=[GET,POST])
 def login():
@@ -257,12 +314,7 @@ def add_user(email, login, password):
     log.debug("Login: " + login )
     try:
         hashed_password = bcrypt.using(rounds=15).hash(password)
-        log.debug("ok")
         new_user = User(email=email, login=login, passwd_hash=hashed_password)
-        log.debug("dodawanie do bazy danych")
-        log.debug(new_user)
-        log.debug(User.query.all())
-
         db.session.add(new_user)
         db.session.commit()
 
@@ -451,8 +503,7 @@ def decode_note():
 
 @app.route('/uploads/<path:filename>')
 def download_file(filename):
-    return send_from_directory(app.config['UPLOAD_FOLDER'],
-                               filename, as_attachment=True)
+    return send_from_directory(app.config['UPLOAD_FOLDER'], filename, as_attachment=True)
 
 def active_session():
     try:

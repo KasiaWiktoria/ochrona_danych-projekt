@@ -1,6 +1,7 @@
 GET = "GET"
 POST = "POST"
 SECRET_KEY = "SECRET_KEY_FOR_APP"
+URL = "https:/localhost/"
 
 SESSION_ID = "session"
 ALLOWED_EXTENSIONS = {'txt', 'doc', 'docx','pdf', 'png', 'jpg', 'jpeg', 'gif'}
