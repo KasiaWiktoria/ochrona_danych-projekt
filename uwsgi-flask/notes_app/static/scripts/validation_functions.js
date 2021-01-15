@@ -95,6 +95,32 @@ function checkLoginAvailability() {
     }));
 }
 
+export function isEmailAvailable() {
+    return Promise.resolve(checkEmailAvailability().then(function (statusCode) {
+        if (statusCode === HTTP_STATUS.OK) {
+            return false;
+        } else if (statusCode === HTTP_STATUS.NOT_FOUND) {
+            return true
+        } else {
+            throw "Unknown login availability status: " + statusCode;
+        }
+    }));
+}
+
+function checkEmailAvailability() {
+    let loginInput = document.getElementById(EMAIL_FIELD_ID);
+    let baseUrl = URL + "email/";
+    let userUrl = baseUrl + loginInput.value;
+
+    return Promise.resolve(fetch(userUrl, { mode: 'cors'}, {method: GET}).then(function (resp) {
+        console.log("status = " + resp.status);
+        return resp.status;
+    }).catch(function (err) {
+        
+        return err.status;
+    }));
+}
+
 export function validateLogin(){
     let loginInput = document.getElementById(LOGIN_FIELD_ID).value;
     if (!(RegExp("^[" + POLSKIE_ZNAKI +"]+$").test(loginInput))){

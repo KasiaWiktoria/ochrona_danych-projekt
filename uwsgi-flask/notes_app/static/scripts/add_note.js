@@ -56,7 +56,6 @@ add_btn.addEventListener('click', function (){
             let warningElem = pwe(warningElemId, message);
             aae("add-form-row", warningElem);
         } else {
-            console.log('ok')
             add_email_to_list()
         }
     }else{

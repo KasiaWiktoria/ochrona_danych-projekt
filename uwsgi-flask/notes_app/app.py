@@ -16,9 +16,7 @@ from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime, timedelta
 import os
 import re
-
 from .const import *
-from sqlalchemy.ext.declarative import DeclarativeMeta
 
 app = Flask(__name__, static_url_path="")
 
@@ -31,22 +29,6 @@ app.config['SECRET_KEY'] = SECRET_KEY
 log = app.logger
 db = SQLAlchemy(app)
 csrf = CSRFProtect(app)
-
-class AlchemyEncoder(json.JSONEncoder):
-
-    def default(self, obj):
-        if isinstance(obj.__class__, DeclarativeMeta):
-            fields = {}
-            for field in [x for x in dir(obj) if not x.startswith('_') and x != 'metadata']:
-                data = obj.__getattribute__(field)
-                try:
-                    json.dumps(data) 
-                    fields[field] = data
-                except TypeError:
-                    fields[field] = None
-            return fields
-
-        return json.JSONEncoder.default(self, obj)
 
 class Note(db.Model):
     __tablename__ = "notes"
@@ -169,7 +151,7 @@ def recover_password():
         print('_________________________________________________________________________')
     else:
         print('Nic nie zostanie wysłane, ponieważ nie znaleziono użytkownika o podanym emailu w bazie dancyh.')
-    log.debug('ok')
+
     return jsonify({'message':'Na podany adres email wysłano url przekierowujący do strony na której możesz zmienić swoje hasło. Link przekierowujący będzie ważny przez 10 minut.', 'status': 200}), 200
 
 @app.route("/recover_password/<recovery_token>", methods=[GET])
@@ -227,17 +209,8 @@ def login():
             if bcrypt.using(rounds=15).verify(password, hash_from_db):
                 log.debug("Hasło jest poprawne.")
                 hash_ = uuid4().hex 
-                '''
-                try:
-                    new_session = Session(session_id=SESSION_ID, user=username, _hash=hash_)
-                    db.session.add(new_session)
-                    db.session.commit()
-                except Exception as e:
-                    log.debug(e)
-                '''
                 session.permanent = True
                 session['user'] = username
-                log.debug('okokokok')
                 response = make_response(jsonify({'msg': "Zalogowano pomyślnie", "status": 200}), 200)
                 response.set_cookie(SESSION_ID, hash_,  max_age=300, secure=True, httponly=True)
 
@@ -307,6 +280,22 @@ def registration():
         else:
             abort(401)
 
+@app.route("/user/<string:username>")
+def user_is_in_database(username):
+    user = User.query.filter_by(login=username).first()
+    if user:
+        return {"message":"User is in the database.", "status" : 200}, 200
+    else:
+        return {"message": "There is no user with this username.", "status" : 404}, 404
+
+@app.route("/email/<string:email>")
+def email_is_in_database(email):
+    user = User.query.filter_by(email=email).first()
+    if user:
+        return {"message":"User is in the database.", "status" : 200}, 200
+    else:
+        return {"message": "There is no user with this username.", "status" : 404}, 404
+
 
 def validateEmail(email):
     regex = re.compile(r"^[-\w\.]+@([\w-]+\.)+[\w-]{2,4}$")
@@ -328,20 +317,7 @@ def add_user(email, login, password):
         errors.append("Unable to add item to database.")
         log.debug(e)
         return "Rejected!"
-
-@app.route("/get_notes_list")
-def get_notes_list():
-    if active_session():
-        log.debug('funkcja get_notes_list')
-        user = session['user']
-        notes = Note.query.filter(Note.author==user).all()
-        for note in notes:
-            note.date = note.date.strftime('%d %B %Y - %H:%M:%S')
-        log.debug(notes)
-        return {'notes': notes}, 200
-    else:
-        return {'msg': 'Pobieranie notatek nie powiodło się.'}, 400
-
+        
 @app.route("/notes_list")
 def notes_list():
     if active_session():
@@ -451,7 +427,7 @@ def add_note():
             return make_response(jsonify({"msg": str(e), "status":400}), 400)
 
 
-        return make_response(jsonify({"msg": "ok", "status":200}), 200)
+        return make_response(jsonify({"msg": "poprawnie dodano notatkę", "status":200}), 200)
     else:
         if active_session():
             return render_template("add_note.html", loggedin=active_session())
