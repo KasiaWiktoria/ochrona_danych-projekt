@@ -1,4 +1,4 @@
-import {addCorrectMessage, addfailureMessage, submitForm, updateCorrectnessMessage, prepareOtherEventOnChange, prepareEventOnChange} from './form_functions.js';
+import {addCorrectMessage, addfailureMessage, submitForm, updateCorrectnessMessage, prepareOtherEventOnChange, prepareEventOnChange, updatePasswdCorrectnessMessage, updateRepeatPasswdCorrectnessMessage, checkPasswdStrength} from './form_functions.js';
 import {showWarningMessage, removeWarningMessage, prepareWarningElem, appendAfterElem} from './warning_functions.js';
 import {isAnyFieldBlank, isLoginAvailable, validateLogin, validatePasswd, arePasswdsTheSame, validateEmail} from './validation_functions.js';
 import {GET, POST, URL, HTTP_STATUS, EMAIL_FIELD_ID, LOGIN_FIELD_ID, PASSWD_FIELD_ID, REPEAT_PASSWD_FIELD_ID} from './const.js'
@@ -73,100 +73,6 @@ document.addEventListener('DOMContentLoaded', function (event) {
             console.log("Unorrect login.");
             showWarningMessage(warningElemId, warningMessage, LOGIN_FIELD_ID);
         }
-    }
-    
-    function updatePasswdCorrectnessMessage() {
-        let warningElemId = "passwordWarning";
-        let warningMessage = validatePasswd();
-        removeWarningMessage("uncorrect");
-        removeWarningMessage("correct");
-    
-        removeWarningMessage(warningElemId);
-        if (warningMessage == "") {
-            if ((arePasswdsTheSame())) {
-                console.log("Correct password!");
-                removeWarningMessage("second_passwordWarning");
-            } else {
-                warningMessage = "Podany ciąg znaków nie zgadza się z hasłem podanym poniżej.";
-                showWarningMessage(warningElemId, warningMessage, PASSWD_FIELD_ID);
-            }
-        } else {
-            console.log("Uncorrect password");
-            showWarningMessage(warningElemId, warningMessage, PASSWD_FIELD_ID);
-        }
-    }
-    
-    function updateRepeatPasswdCorrectnessMessage() {
-        let warningElemId = "second_passwordWarning";
-        let warningMessage = "Podany ciąg znaków nie zgadza się z hasłem podanym wyżej.";
-        removeWarningMessage("uncorrect");
-        removeWarningMessage("correct");
-        removeWarningMessage(warningElemId);
-    
-        if (arePasswdsTheSame()) {
-            console.log("Correct repeat password!");
-            removeWarningMessage(warningElemId);
-            removeWarningMessage("passwordWarning");
-            if (validatePasswd() !== "") {
-                showWarningMessage(warningElemId, validatePasswd(), PASSWD_FIELD_ID);
-            }
-        } else {
-            console.log("Uncorrect repeat password");
-            showWarningMessage(warningElemId, warningMessage, REPEAT_PASSWD_FIELD_ID);
-        }
-    }
-
-    function checkPasswdStrength(){
-
-        console.log('sprawdzanie siły hasła')
-        let progress = document.getElementById('passwordStrength')
-        let complexity = calculateComplexity(this.value);
-
-        progress.value = complexity.value;
-        progress.max = complexity.max;
-    }
-
-    function calculateComplexity(password){
-        let complexity = 0;
-
-        let regExps = [
-            /[a-z]/,
-            /[A-Z]/,
-            /[0-9]/,
-            /.{8}/,
-            /.{16}/,
-            /[/?!-//:@[-`{-ÿ]/
-        ];
-        regExps.forEach(regexp => {
-            if (regexp.test(password)){
-                complexity++;
-            }
-        });
-
-        return {
-            value: complexity,
-            max: regExps.length
-        }
-    }
-
-    function calcEntropy(passwd){
-        stat = {}
-        passwd.array.forEach(c => {
-            m = c
-            if (m in stat) {
-                stat[m] += 1
-            }
-            else{
-                stat[m] = 1
-            }
-            H = 0.0
-            kk = stat.keys()
-            kk.forEach(i => {
-                pi = stat[i]/len(passwd)
-                H -= pi*math.log2(pi)
-            })
-        });
-        return H
     }
 
 });

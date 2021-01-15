@@ -156,7 +156,7 @@ def recover_password():
     if user:
         recovery_token = token_urlsafe(64) 
         try:
-            newRecoveryToken = RecoveryToken(token=recovery_token,user=user, creation_date=datetime.utcnow())
+            newRecoveryToken = RecoveryToken(token=recovery_token, user=user.login, creation_date=datetime.utcnow())
             db.session.add(newRecoveryToken)
             db.session.commit()
         except Exception as e:
@@ -165,17 +165,19 @@ def recover_password():
             return jsonify({'message':'Coś poszło nie tak.', 'status': 400}), 400
         recovery_url = URL + 'recover_password/' + recovery_token
         print('_________________________________________________________________________')
-        print(f'Na adres email: {enteredEmail} wysłałabym url do zmiany hasła')
+        print(f'Na adres email: {enteredEmail} wysłyłam url do zmiany hasła')
         print(f'url do zmiany hasła: {recovery_url}')
         print('_________________________________________________________________________')
+    else:
+        print('Nic nie zostanie wysłane, ponieważ nie znaleziono użytkownika o podanym emailu w bazie dancyh.')
     log.debug('ok')
     return jsonify({'message':'Na podany adres email wysłano url przekierowujący do strony na której możesz zmienić swoje hasło. Link przekierowujący będzie ważny przez 10 minut.', 'status': 200}), 200
 
 @app.route("/recover_password/<recovery_token>", methods=[GET])
 def recover_password_for_user(recovery_token):
     recovery_token = RecoveryToken.query.filter_by(token=recovery_token).first()
-    if recovery_token.user and recovery_token.creation_date < datetime.utcnow() + timedelta(minutes=10):
-        return render_template('change_password.html', user=recovery_token.user)
+    if recovery_token.user and recovery_token.creation_date + timedelta(minutes=10) > datetime.utcnow():
+        return render_template('password_change.html', user=recovery_token.user)
     else:
         abort(404)
 
@@ -187,8 +189,8 @@ def reset_password():
     user = User.query.filter_by(login=username).first()
     if user:
         hashed_password = bcrypt.using(rounds=15).hash(new_password)
-        user.hashed_password = hashed_password
         try:
+            user.passwd_hash = hashed_password
             db.session.commit()
         except:
             jsonify({'message':'Nie udało się zmienić hasła.', 'status': 400}), 400
@@ -351,7 +353,6 @@ def notes_list():
                 file_names[note.file] = file.file_name
             if note.encrypted:
                 encrypted_notes_ids_list.append(note.id)
-            log.debug(f'data: {note.date}, format: {type(note.date)} ')
             if type(note.date) is not str:
                 note.date = note.date.strftime('%d %B %Y - %H:%M:%S')
             

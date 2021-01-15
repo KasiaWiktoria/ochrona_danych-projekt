@@ -64,3 +64,9 @@ progress[value]::-webkit-progress-value {
     color: var(--main-color);
     text-shadow: 2px 1px #20031e0c;
 }
+
+.password-change-form p span {
+    font-size: 20px;
+    font-weight: 500;
+    color: var(--main-color);
+}
