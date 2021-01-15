@@ -22,10 +22,10 @@ from sqlalchemy.ext.declarative import DeclarativeMeta
 
 app = Flask(__name__, static_url_path="")
 
-app.config ['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///db.sqlite3' #os.getenv("DATABASE_URL", "sqlite://")
+app.config ['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///db.sqlite3'
 app.config ['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config["PERMANENT_SESSION_LIFETIME"] = timedelta(minutes=5)
-app.config ['UPLOAD_FOLDER'] = '/app/user-files'
+app.config ['UPLOAD_FOLDER'] = './app/user-files'
 app.config['SECRET_KEY'] = SECRET_KEY
 
 log = app.logger
@@ -148,7 +148,6 @@ def password_recovery():
 
 @app.route("/recover_password", methods=[POST])
 def recover_password():
-    log.debug('początek funkcji generującej url')
     enteredEmail = request.form[EMAIL_FIELD_ID]
     user = User.query.filter_by(email=enteredEmail).first()
     log.debug(f'user: {user}')
@@ -165,8 +164,8 @@ def recover_password():
             return jsonify({'message':'Coś poszło nie tak.', 'status': 400}), 400
         recovery_url = URL + 'recover_password/' + recovery_token
         print('_________________________________________________________________________')
-        print(f'Na adres email: {enteredEmail} wysłyłam url do zmiany hasła')
-        print(f'url do zmiany hasła: {recovery_url}')
+        print(f'Użytkownik poprosił o zmianę hasła, wysłałabym mu link: {recovery_url}')
+        print(f'na adres e-mail: {enteredEmail}')
         print('_________________________________________________________________________')
     else:
         print('Nic nie zostanie wysłane, ponieważ nie znaleziono użytkownika o podanym emailu w bazie dancyh.')
@@ -351,11 +350,12 @@ def notes_list():
             if note.file:
                 file = File.query.filter_by(file_uuid=note.file).first()
                 file_names[note.file] = file.file_name
+                log.debug(f'file_names:  {file_names}')
             if note.encrypted:
                 encrypted_notes_ids_list.append(note.id)
+        for note in notes:
             if type(note.date) is not str:
-                note.date = note.date.strftime('%d %B %Y - %H:%M:%S')
-            
+                note.date = note.date.strftime('%d %B %Y - %H:%M:%S')            
         log.debug(notes)
         return render_template("notes_list.html", notes=notes, loggedin=active_session(), encrypted_notes_ids_list=encrypted_notes_ids_list, file_names=file_names)
     else:
@@ -429,7 +429,7 @@ def add_note():
             try:
                 uuid_filename = secure_filename(file_uuid)
                 log.debug(f'plik: {f.filename}')
-                log.debug(f'ścieżka: {uuid_filename}')
+                log.debug(f'ścieżka: {os.getcwd()}')
                 f.save(os.path.join(app.config['UPLOAD_FOLDER'], uuid_filename))
                 try:
                     newNote.file = file_uuid
@@ -492,13 +492,17 @@ def decode_note():
     note = Note.query.filter_by(id=note_id).first()
     iv = b64decode(note.iv)
     encrypted_note = b64decode(note.note_content)
+    file_name = None
 
     try:
         key = PBKDF2(entered_passwd.encode('utf-8'), note.salt)
         cipher = AES.new(key, AES.MODE_CBC, iv)
         decrypted_note = unpad(cipher.decrypt(encrypted_note), AES.block_size).decode("utf-8") 
         log.debug(f'odszyfrowana notatka: {decrypted_note} ')
-        return jsonify({'message': 'Poprawnie odszyfrowano notatkę.', 'decrypted_note_content': decrypted_note, 'status':200}), 200
+        if note.file:
+            file = File.query.filter_by(file_uuid=note.file).first()
+            file_name = file.file_name
+        return jsonify({'message': 'Poprawnie odszyfrowano notatkę.', 'decrypted_note_content': decrypted_note, 'file_name': file_name, 'status':200}), 200
     except ValueError:
         return jsonify({'message': 'Błędne hasło.', 'status':400}), 400
 

@@ -76,10 +76,11 @@
                     {% endif %}
                     {% if not note.encrypted %}
                         <p class="text">{{note.note_content}}</p>
+                        {% if note.file %}
+                            <a href="/uploads/{{note.file}}">{{file_names[note.file]}}</a>
+                        {% endif %}
                     {% endif %}
-                    {% if note.file %}
-                        <a href="/uploads/{{note.file}}">{{file_names[note.file]}}</a>
-                    {% endif %}
+                    
                 </div>
             {% endfor %}
 

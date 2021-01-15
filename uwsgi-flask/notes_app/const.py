@@ -1,6 +1,7 @@
+import os
 GET = "GET"
 POST = "POST"
-SECRET_KEY = "SECRET_KEY_FOR_APP"
+SECRET_KEY = os.getenv('SECRET_KEY_FOR_APP')
 URL = "https:/localhost/"
 
 SESSION_ID = "session"

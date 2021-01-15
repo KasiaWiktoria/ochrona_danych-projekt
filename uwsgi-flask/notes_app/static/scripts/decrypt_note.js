@@ -100,7 +100,7 @@ function showMessages(response, note_id) {
 
     if (status === HTTP_STATUS.OK) {
         console.log(response.message);
-        showNote(response.decrypted_note_content, note_id)
+        showNote(response.decrypted_note_content, note_id, response.file_name)
     } else if (status == HTTP_STATUS.BAD_REQUEST) {
         console.log("Podano niepoprawne hasło.")
         addfailureMessage(id,response.message)
@@ -111,14 +111,21 @@ function showMessages(response, note_id) {
     }
 }
 
-function showNote(note, note_id){
+function showNote(note, note_id, file_name){
     let note_field = document.getElementById(note_id+'_note_field')
     let text = document.createElement('p')
     text.className = 'text'
     text.textContent = note //jsEscape(note)
     removeDecryptPasswdInput(note_field, note_id)
     note_field.appendChild(text)
+    if (file_name){
+        let file_name_field = document.createElement('a')
+        file_name_field.href = '/uploads/' + file_name
+        file_name_field.textContent = file_name
+        note_field.appendChild(file_name_field)
+    }
 }
+
 function removeDecryptPasswdInput(note_field, note_id){
     let decrypt_passwd_input = document.getElementById(note_id + '-decrypt-note-form')
     if (decrypt_passwd_input != null){
