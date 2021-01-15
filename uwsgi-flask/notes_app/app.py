@@ -524,8 +524,6 @@ def active_session():
         return False
 
 
-
-
 @app.errorhandler(400)
 def bad_request(error):
     return make_response(render_template("errors/400.html", error=error, loggedin=active_session()), 400)

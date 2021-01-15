@@ -2,12 +2,13 @@ import {GET, POST, URL, HTTP_STATUS, EMAIL_FIELD_ID, LOGIN_FIELD_ID, PASSWD_FIEL
 import {showWarningMessage, removeWarningMessage, prepareWarningElem, appendAfterElem} from './warning_functions.js';
 import {validatePasswd, arePasswdsTheSame} from './validation_functions.js'
 
-const csrfToken = document.getElementById('csrf_token').value
-const headers = new Headers({
-    "X-CSRF-Token": csrfToken
-});
 
 export function submitForm(url, form, name, successMessage, failureMessage) {
+    const csrfToken = document.getElementById('csrf_token').value
+    const headers = new Headers({
+        "X-CSRF-Token": csrfToken
+    });
+    
     let registerUrl = url + name;
     console.log(form);
     console.log(new FormData(form));
@@ -161,46 +162,24 @@ export function checkPasswdStrength(){
     progress.max = complexity.max;
 }
 
+
 function calculateComplexity(password){
-    let complexity = 0;
-
-    let regExps = [
-        /[a-z]/,
-        /[A-Z]/,
-        /[0-9]/,
-        /.{8}/,
-        /.{16}/,
-        /[/?!-//:@[-`{-ÿ]/
-    ];
-    regExps.forEach(regexp => {
-        if (regexp.test(password)){
-            complexity++;
-        }
-    });
-
     return {
-        value: complexity,
-        max: regExps.length
+        value: calcEntrophy(password),
+        max: 8
     }
 }
 
-
-function calcEntropy(passwd){
-    stat = {}
-    passwd.array.forEach(c => {
-        m = c
-        if (m in stat) {
-            stat[m] += 1
-        }
-        else{
-            stat[m] = 1
-        }
-        H = 0.0
-        kk = stat.keys()
-        kk.forEach(i => {
-            pi = stat[i]/len(passwd)
-            H -= pi*math.log2(pi)
-        })
-    });
-    return H
+function calcEntrophy(pass) {
+    var H = 0.0;
+    var signs = new Object();
+    for (var i=0; i<pass.length; i++) {
+        signs[pass[i]] = (signs[pass[i]] || 0) + 1;
+    }
+   
+    for (let sign in signs) {
+        var pi = signs[sign]/pass.length;
+        H -= pi*Math.log2(pi)
+    }
+    return H;
 }

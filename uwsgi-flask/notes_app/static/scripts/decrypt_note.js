@@ -1,7 +1,6 @@
-const POST = "POST";
-const URL = "https://localhost/";
-var HTTP_STATUS = {OK: 200, CREATED: 201, BAD_REQUEST: 400, UNAUTHORIZED: 401, FORBIDDEN: 403, NOT_FOUND: 404, INTERNAL_SERVER_ERROR: 500};
-const DECRYPT_PASSWD_FIELD_ID = "decrypt_passwd"
+import { addfailureMessage} from './form_functions.js';
+import {prepareWarningElem, appendAfterElem} from './warning_functions.js';
+import {GET, POST, URL, HTTP_STATUS, DECRYPT_PASSWD_FIELD_ID} from './const.js'
 
 
 document.addEventListener('DOMContentLoaded', function (event) {
@@ -115,7 +114,7 @@ function showNote(note, note_id, file_name){
     let note_field = document.getElementById(note_id+'_note_field')
     let text = document.createElement('p')
     text.className = 'text'
-    text.textContent = note //jsEscape(note)
+    text.textContent = note 
     removeDecryptPasswdInput(note_field, note_id)
     note_field.appendChild(text)
     if (file_name){
@@ -131,41 +130,4 @@ function removeDecryptPasswdInput(note_field, note_id){
     if (decrypt_passwd_input != null){
         note_field.removeChild(decrypt_passwd_input);
     }
-}
-
-
-
-function addfailureMessage(id,failureMessage) {
-    removeWarningMessage("correct");
-    removeWarningMessage("uncorrect");
-    let uncorrectElem = prepareWarningElem("uncorrect", failureMessage);
-    uncorrectElem.className = "uncorrect-field"
-    appendAfterElem(id, uncorrectElem);
-}
-
-function removeWarningMessage(warningElemId) {
-    let warningElem = document.getElementById(warningElemId);
-
-    if (warningElem !== null) {
-        warningElem.remove();
-    }
-}
-
-function prepareWarningElem(newElemId, message) {
-    let warningField = document.getElementById(newElemId);
-
-    if (warningField === null) {
-        let textMessage = document.createTextNode(message);
-        warningField = document.createElement('span');
-
-        warningField.setAttribute("id", newElemId);
-        warningField.className = "warning-field";
-        warningField.appendChild(textMessage);
-    }
-    return warningField;
-}
-
-function appendAfterElem(currentElemId, newElem) {
-    let currentElem = document.getElementById(currentElemId);
-    currentElem.insertAdjacentElement('afterend', newElem);
 }

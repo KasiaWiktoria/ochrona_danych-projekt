@@ -1,11 +1,8 @@
-import {addCorrectMessage, addfailureMessage, submitForm, updateCorrectnessMessage, prepareOtherEventOnChange} from './form_functions.js';
-import {showWarningMessage, removeWarningMessage, prepareWarningElem, appendAfterElem} from './warning_functions.js';
-import {isAnyFieldBlank, isLoginAvailable, validateLogin, validatePasswd, arePasswdsTheSame} from './validation_functions.js';
-import {GET, POST, URL, HTTP_STATUS, NOTE_CONTENT_FIELD_ID, ENCRYPT_FIELD_ID, PUBLIC_FIELD_ID, ENCRYPT_PASSWD_FIELD_ID, WHO_CAN_READ_FIELD_ID, FILE_FIELD_ID} from './const.js'
-import {htmlEncode, jsEscape} from './additional_functions.js'
+import {addCorrectMessage, addfailureMessage} from './form_functions.js';
+import {isAnyFieldBlank} from './validation_functions.js';
+import {GET, POST, URL, HTTP_STATUS, NOTE_CONTENT_FIELD_ID, ENCRYPT_FIELD_ID, PUBLIC_FIELD_ID, ENCRYPT_PASSWD_FIELD_ID, WHO_CAN_READ_FIELD_ID} from './const.js'
 
 let users_who_can_read = []
-
 
 const csrfToken = document.getElementById('csrf_token').value
 const headers = new Headers({
