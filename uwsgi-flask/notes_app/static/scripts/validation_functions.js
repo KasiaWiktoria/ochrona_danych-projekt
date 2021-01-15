@@ -39,7 +39,9 @@ export function noSpecialCharacters(FIELD_ID) {
     }
 }
 
-export function validateEmail(EMAIL_FIELD_ID){
+export function validateEmail(){
+    console.log(EMAIL_FIELD_ID)
+    console.log(document.getElementById(EMAIL_FIELD_ID))
     let emailInput = document.getElementById(EMAIL_FIELD_ID).value;
     if(RegExp("^\s$").test(emailInput)){
         return "Email nie może zawierać spacji.";
@@ -108,9 +110,9 @@ export function isEmailAvailable() {
 }
 
 function checkEmailAvailability() {
-    let loginInput = document.getElementById(EMAIL_FIELD_ID);
+    let emailInput = document.getElementById(EMAIL_FIELD_ID);
     let baseUrl = URL + "email/";
-    let userUrl = baseUrl + loginInput.value;
+    let userUrl = baseUrl + emailInput.value;
 
     return Promise.resolve(fetch(userUrl, { mode: 'cors'}, {method: GET}).then(function (resp) {
         console.log("status = " + resp.status);

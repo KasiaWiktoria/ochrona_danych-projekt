@@ -1,11 +1,11 @@
 import {addCorrectMessage, addfailureMessage, submitForm, updateCorrectnessMessage, prepareOtherEventOnChange, prepareEventOnChange, updatePasswdCorrectnessMessage, updateRepeatPasswdCorrectnessMessage, checkPasswdStrength} from './form_functions.js';
 import {showWarningMessage, removeWarningMessage, prepareWarningElem, appendAfterElem} from './warning_functions.js';
-import {isAnyFieldBlank, isLoginAvailable, validateLogin, validatePasswd, arePasswdsTheSame, validateEmail} from './validation_functions.js';
+import {isAnyFieldBlank, isLoginAvailable, isEmailAvailable, validateLogin, validatePasswd, arePasswdsTheSame, validateEmail} from './validation_functions.js';
 import {GET, POST, URL, HTTP_STATUS, EMAIL_FIELD_ID, LOGIN_FIELD_ID, PASSWD_FIELD_ID, REPEAT_PASSWD_FIELD_ID} from './const.js'
 
 document.addEventListener('DOMContentLoaded', function (event) {
 
-    prepareEventOnChange(EMAIL_FIELD_ID, validateEmail);
+    prepareOtherEventOnChange(EMAIL_FIELD_ID, updateEmailAvailabilityMessage);
     prepareOtherEventOnChange(LOGIN_FIELD_ID, updateLoginAvailabilityMessage);
     prepareOtherEventOnChange(PASSWD_FIELD_ID, updatePasswdCorrectnessMessage);
     prepareOtherEventOnChange(REPEAT_PASSWD_FIELD_ID, updateRepeatPasswdCorrectnessMessage);
@@ -72,6 +72,36 @@ document.addEventListener('DOMContentLoaded', function (event) {
         } else {
             console.log("Unorrect login.");
             showWarningMessage(warningElemId, warningMessage, LOGIN_FIELD_ID);
+        }
+    }
+
+    function updateEmailAvailabilityMessage() {
+        let warningElemId = "emailWarning";
+        removeWarningMessage("uncorrect");
+        removeWarningMessage("correct");
+    
+        let warningMessage = validateEmail();
+        removeWarningMessage(warningElemId);
+        if (warningMessage == "") {
+            console.log("Correct email!");
+            warningMessage = "Podany email jest już zajęty.";
+    
+            isEmailAvailable().then(function (isAvailable) {
+                if (isAvailable) {
+                    console.log("Available email!");
+                    AVAILABLE_LOGIN = true;
+                } else {
+                    console.log("NOT available email");
+                    showWarningMessage(warningElemId, warningMessage, EMAIL_FIELD_ID);
+                }
+            }).catch(function (error) {
+                showWarningMessage(warningElemId, "W tej chwili nie jesteśmy w stanie zweryfikować dostępności emailu.", EMAIL_FIELD_ID);
+                console.error("Something went wrong while checking email.");
+                console.error(error);
+            });
+        } else {
+            console.log("Unorrect email.");
+            showWarningMessage(warningElemId, warningMessage, EMAIL_FIELD_ID);
         }
     }
 
